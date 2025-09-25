@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envío Masivo de Correos de Bienvenida</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 1100px;
+            overflow: hidden;
+        }
+        
+        header {
+            background: #4A6FFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .content {
+            padding: 25px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        @media (max-width: 900px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-section, .preview-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        h2 {
+            margin-bottom: 20px;
+            color: #4A6FFF;
+            font-size: 20px;
+            border-bottom: 2px solid #4A6FFF;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .recipients-list {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            background: white;
+        }
+        
+        .recipient-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .recipient-item:last-child {
+            border-bottom: none;
+        }
+        
+        .recipient-item input {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .email-preview {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            min-height: 300px;
+        }
+        
+        .email-header {
+            border-bottom: 2px solid #f1f1f1;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .email-subject {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4A6FFF;
+            margin-bottom: 10px;
+        }
+        
+        .email-meta {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .email-body {
+            line-height: 1.6;
+            color: #212529;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #4A6FFF;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3a5fd9;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #28a745;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .status-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #6c757d;
+            text-align: center;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .template-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .template-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .template-btn.active {
+            border-color: #4A6FFF;
+            background: #f0f4ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Envío Masivo de Correos de Bienvenida</h1>
+            <p>Gestiona y envía correos de bienvenida a nuevos usuarios</p>
+        </header>
+        
+        <div class="content">
+            <div class="form-section">
+                <h2>Configuración del Correo</h2>
+                
+                <div class="template-selector">
+                    <div class="template-btn active" data-template="formal">
+                        <i class="fas fa-building"></i>
+                        <span>Formal</span>
+                    </div>
+                    <div class="template-btn" data-template="informal">
+                        <i class="fas fa-smile"></i>
+                        <span>Informal</span>
+                    </div>
+                    <div class="template-btn" data-template="promotional">
+                        <i class="fas fa-percentage"></i>
+                        <span>Promocionsl</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Asunto del Correo</label>
+                    <input type="text" id="subject" placeholder="Ej: ¡Bienvenido a Nuestra Plataforma!" value="¡Bienvenido a Nuestra Plataforma!">
+                </div>
+                
+                <div class="form-group">
+                    <label for="sender">Remitente</label>
+                    <input type="text" id="sender" placeholder="Ej: Equipo de Soporte" value="Equipo de Bienvenida">
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Mensaje de Bienvenida</label>
+                    <textarea id="message" placeholder="Escribe tu mensaje de bienvenida aquí...">Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
+
+Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
+
+¡Gracias por unirte a nosotros!</textarea>
+                </div>
+                
+                <h2>Destinatarios</h2>
+                
+                <div class="form-group">
+                    <label for="recipients">Lista de Correos Electrónicos</label>
+                    <textarea id="recipients" placeholder="Ingresa las direcciones de correo, separadas por comas o por líneas">ejemplo1@correo.com, ejemplo2@correo.com
+ejemplo3@correo.com
+ejemplo4@correo.com, ejemplo5@correo.com</textarea>
+                </div>
+                
+                <div class="recipients-list">
+                    <div class="recipient-item">
+                        <input type="checkbox" checked>
+                        <span>ejemplo1@correo.com</span>
+                    </div>
+                    <div class="recipient-item">
+                        <input type="checkbox" checked>
+                        <span>ejemplo2@correo.com</span>
+                    </div>
+                    <div class="recipient-item">
+                        <input type="checkbox" checked>
+                        <span>ejemplo3@correo.com</span>
+                    </div>
+                    <div class="recipient-item">
+                        <input type="checkbox" checked>
+                        <span>ejemplo4@correo.com</span>
+                    </div>
+                    <div class="recipient-item">
+                        <input type="checkbox" checked>
+                        <span>ejemplo5@correo.com</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-section">
+                <h2>Vista Previa del Correo</h2>
+                
+                <div class="email-preview">
+                    <div class="email-header">
+                        <div class="email-subject" id="preview-subject">¡Bienvenido a Nuestra Plataforma!</div>
+                        <div class="email-meta">
+                            <strong>De:</strong> Equipo de Bienvenida<br>
+                            <strong>Para:</strong> [Destinatario]
+                        </div>
+                    </div>
+                    
+                    <div class="email-body" id="preview-message">
+                        Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
+
+Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
+
+¡Gracias por unirte a nosotros!
+                    </div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                
+                <div class="status-info" id="status-info">Listo para enviar</div>
+                
+                <div class="actions">
+                    <button class="btn btn-secondary" id="test-btn">
+                        <i class="fas fa-vial"></i> Enviar Prueba
+                    </button>
+                    <button class="btn btn-primary" id="preview-btn">
+                        <i class="fas fa-eye"></i> Actualizar Vista
+                    </button>
+                    <button class="btn btn-success" id="send-btn">
+                        <i class="fas fa-paper-plane"></i> Enviar a Todos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">Correos enviados con éxito</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos DOM
+            const subjectInput = document.getElementById('subject');
+            const senderInput = document.getElementById('sender');
+            const messageInput = document.getElementById('message');
+            const recipientsInput = document.getElementById('recipients');
+            const previewSubject = document.getElementById('preview-subject');
+            const previewMessage = document.getElementById('preview-message');
+            const progressBar = document.getElementById('progress-bar');
+            const statusInfo = document.getElementById('status-info');
+            const testBtn = document.getElementById('test-btn');
+            const previewBtn = document.getElementById('preview-btn');
+            const sendBtn = document.getElementById('send-btn');
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            const templateButtons = document.querySelectorAll('.template-btn');
+            
+            // Actualizar vista previa
+            function updatePreview() {
+                previewSubject.textContent = subjectInput.value;
+                previewMessage.innerHTML = messageInput.value.replace(/\n/g, '<br>');
+            }
+            
+            // Plantillas de correo
+            const templates = {
+                formal: {
+                    subject: "Bienvenido a Nuestra Plataforma",
+                    sender: "Departamento de Atención al Cliente",
+                    message: "Estimado usuario,\n\nNos complace darle la bienvenida a nuestra plataforma. Agradecemos su confianza en nuestros servicios.\n\nQuedamos a su disposición para cualquier consulta o inquietud que pueda tener.\n\nAtentamente,\nEl Equipo de Soporte"
+                },
+                informal: {
+                    subject: "¡Te damos la bienvenida!",
+                    sender: "El equipo de comunidad",
+                    message: "¡Hola!\n\n¡Estamos encantados de tenerte con nosotros! Esperamos que te sientas como en casa y disfrutes de todos nuestros servicios.\n\nSi necesitas ayuda o tienes alguna pregunta, no dudes en contactarnos. Estamos aquí para ayudarte.\n\n¡Un saludo!"
+                },
+                promotional: {
+                    subject: "¡Bienvenido! Tu descuento especial te espera",
+                    sender: "Ofertas Especiales",
+                    message: "¡Bienvenido a bordo!\n\nPara celebrar tu llegada, queremos ofrecerte un 20% de descuento en tu primera compra. Usa el código: BIENVENIDO20\n\nAdemás, tendrás acceso prioritario a nuestras promociones exclusivas.\n\n¡No esperes más para disfrutar de tus beneficios!\n\nEl equipo de Promociones"
+                }
+            };
+            
+            // Configurar plantilla seleccionada
+            templateButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    templateButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const template = this.dataset.template;
+                    const templateData = templates[template];
+                    
+                    subjectInput.value = templateData.subject;
+                    senderInput.value = templateData.sender;
+                    messageInput.value = templateData.message;
+                    
+                    updatePreview();
+                });
+            });
+            
+            // Botón de actualizar vista previa
+            previewBtn.addEventListener('click', updatePreview);
+            
+            // Botón de enviar prueba
+            testBtn.addEventListener('click', function() {
+                statusInfo.textContent = "Enviando correo de prueba...";
+                progressBar.style.width = "30%";
+                
+                setTimeout(() => {
+                    progressBar.style.width = "100%";
+                    statusInfo.textContent = "Correo de prueba enviado a tu@email.com";
+                    
+                    notificationText.textContent = "Correo de prueba enviado con éxito";
+                    notification.classList.add('show');
+                    
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        progressBar.style.width = "0%";
+                        statusInfo.textContent = "Listo para enviar";
+                    }, 3000);
+                }, 1000);
+            });
+            
+            // Botón de enviar a todos
+            sendBtn.addEventListener('click', async function() {
+                const emails = recipientsInput.value.split(/[\n,]+/).map(email => email.trim()).filter(email => email);
+
+                if (emails.length === 0) {
+                    statusInfo.textContent = "Error: No hay direcciones de correo";
+                    return;
+                }
+
+                statusInfo.textContent = `Enviando a ${emails.length} destinatarios...`;
+                progressBar.style.width = "10%";
+                sendBtn.disabled = true;
+
+                try {
+                    const response = await fetch('/send-emails', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            subject: subjectInput.value,
+                            sender: senderInput.value,
+                            message: messageInput.value,
+                            recipients: emails
+                        }),
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        let progress = 10;
+                        const interval = setInterval(() => {
+                            progress += 90 / emails.length;
+                            if (progress >= 100) {
+                                progress = 100;
+                                clearInterval(interval);
+                            }
+                            progressBar.style.width = `${progress}%`;
+                        }, 200);
+
+                        statusInfo.textContent = `Enviado a ${emails.length} destinatarios.`;
+                        notificationText.textContent = data.message;
+                        notification.classList.add('show');
+                    } else {
+                        statusInfo.textContent = `Error: ${data.message}`;
+                        notificationText.textContent = `Error: ${data.message}`;
+                        notification.classList.add('show');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    statusInfo.textContent = 'Error de conexión con el servidor.';
+                    notificationText.textContent = 'Error de conexión.';
+                    notification.classList.add('show');
+                } finally {
+                    setTimeout(() => {
+                        progressBar.style.width = "0%";
+                        statusInfo.textContent = "Listo para enviar";
+                        notification.classList.remove('show');
+                        sendBtn.disabled = false;
+                    }, 3000);
+                }
+            });
+            
+            // Inicializar vista previa
+            updatePreview();
+        });
+    </script>
+</body>
+</html>
