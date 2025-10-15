@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Envío Masivo de Correos de Bienvenida</title>
+    <title>Envío Masivo de Correos de Bienvenida Personalizados</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Estilos generales */
         * {
             margin: 0;
             padding: 0;
@@ -102,6 +103,7 @@
             border-radius: 6px;
             padding: 10px;
             background: white;
+            font-size: 14px;
         }
         
         .recipient-item {
@@ -109,15 +111,21 @@
             align-items: center;
             padding: 8px;
             border-bottom: 1px solid #eee;
+            justify-content: space-between;
         }
         
         .recipient-item:last-child {
             border-bottom: none;
         }
         
-        .recipient-item input {
+        .recipient-item input[type="checkbox"] {
             width: auto;
             margin-right: 10px;
+        }
+        .recipient-info {
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-between;
         }
         
         .email-preview {
@@ -149,6 +157,7 @@
         .email-body {
             line-height: 1.6;
             color: #212529;
+            white-space: pre-wrap;
         }
         
         .actions {
@@ -159,10 +168,10 @@
         }
         
         .btn {
-            padding: 12px 25px;
+            padding: 12px 20px;
             border: none;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -196,6 +205,15 @@
         
         .btn-success:hover {
             background: #218838;
+        }
+
+        .btn-info { 
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
         }
         
         .progress-container {
@@ -235,6 +253,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            z-index: 1000;
         }
         
         .notification.show {
@@ -262,15 +281,33 @@
             border-color: #4A6FFF;
             background: #f0f4ff;
         }
+        
+        .btn-file-upload {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 6px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-file-upload:hover {
+            background-color: #0056b3;
+        }
+        
+        #file-upload {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Envío Masivo de Correos de Bienvenida</h1>
-            <p>Gestiona y envía correos de bienvenida a nuevos usuarios</p>
+            <h1>Envío Masivo de Correos de Bienvenida Personalizados</h1>
+            <p>Gestiona y envía correos de bienvenida a nuevos usuarios. Usa **[NOMBRE]** para personalizar.</p>
         </header>
-        
+    
         <div class="content">
             <div class="form-section">
                 <h2>Configuración del Correo</h2>
@@ -286,13 +323,13 @@
                     </div>
                     <div class="template-btn" data-template="promotional">
                         <i class="fas fa-percentage"></i>
-                        <span>Promocionsl</span>
+                        <span>Promocional</span>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="subject">Asunto del Correo</label>
-                    <input type="text" id="subject" placeholder="Ej: ¡Bienvenido a Nuestra Plataforma!" value="¡Bienvenido a Nuestra Plataforma!">
+                    <input type="text" id="subject" placeholder="Ej: ¡Bienvenido a Nuestra Plataforma!" value="¡Hola [NOMBRE], bienvenido a Nuestra Plataforma!">
                 </div>
                 
                 <div class="form-group">
@@ -301,43 +338,54 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="message">Mensaje de Bienvenida</label>
-                    <textarea id="message" placeholder="Escribe tu mensaje de bienvenida aquí...">Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
+                    <label for="message">Mensaje de Bienvenida (Usa **[NOMBRE]** para personalizar)</label>
+                    <textarea id="message" placeholder="Escribe tu mensaje de bienvenida aquí...">Hola [NOMBRE],
+
+Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
 
 Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
 
-¡Gracias por unirte a nosotros!</textarea>
+¡Gracias por unirte a nosotros!
+</textarea>
                 </div>
                 
                 <h2>Destinatarios</h2>
                 
                 <div class="form-group">
-                    <label for="recipients">Lista de Correos Electrónicos</label>
-                    <textarea id="recipients" placeholder="Ingresa las direcciones de correo, separadas por comas o por líneas">ejemplo1@correo.com, ejemplo2@correo.com
-ejemplo3@correo.com
-ejemplo4@correo.com, ejemplo5@correo.com</textarea>
+                    <label for="recipients">Lista de Correos y Nombres (Formato: **Nombre, correo@dominio.com** o solo correo)</label>
+                    <textarea id="recipients" placeholder="Ingresa los destinatarios separados por líneas o comas. Ej: Juan Pérez, juan@ejemplo.com" rows="5">Juan Pérez, ejemplo1@correo.com
+Ana García, ejemplo2@correo.com
+ejemplo3@correo.com</textarea>
                 </div>
-                
+
+                <div class="form-group">
+                    <label for="file-upload" class="btn btn-secondary btn-file-upload">
+                        <i class="fas fa-file-upload"></i> Cargar **CSV o TXT** (Nombre, Correo)
+                    </label>
+                    <input type="file" id="file-upload" accept=".txt,.csv">
+                </div>
+
                 <div class="recipients-list">
                     <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo1@correo.com</span>
+                        <input type="checkbox" checked data-name="Juan Pérez" data-email="ejemplo1@correo.com">
+                        <div class="recipient-info">
+                            <span class="recipient-name">Juan Pérez</span>
+                            <span class="recipient-email">ejemplo1@correo.com</span>
+                        </div>
+                    </div>
+                     <div class="recipient-item">
+                        <input type="checkbox" checked data-name="Ana García" data-email="ejemplo2@correo.com">
+                        <div class="recipient-info">
+                            <span class="recipient-name">Ana García</span>
+                            <span class="recipient-email">ejemplo2@correo.com</span>
+                        </div>
                     </div>
                     <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo2@correo.com</span>
-                    </div>
-                    <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo3@correo.com</span>
-                    </div>
-                    <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo4@correo.com</span>
-                    </div>
-                    <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo5@correo.com</span>
+                        <input type="checkbox" checked data-name="Destinatario" data-email="ejemplo3@correo.com">
+                        <div class="recipient-info">
+                            <span class="recipient-name">Destinatario</span>
+                            <span class="recipient-email">ejemplo3@correo.com</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -345,17 +393,25 @@ ejemplo4@correo.com, ejemplo5@correo.com</textarea>
             <div class="preview-section">
                 <h2>Vista Previa del Correo</h2>
                 
+                <div class="form-group">
+                    <label for="preview-name-select">Personalizar Vista Previa para:</label>
+                    <select id="preview-name-select" class="form-control">
+                        </select>
+                </div>
+
                 <div class="email-preview">
                     <div class="email-header">
-                        <div class="email-subject" id="preview-subject">¡Bienvenido a Nuestra Plataforma!</div>
+                        <div class="email-subject" id="preview-subject">¡Hola [NOMBRE], bienvenido a Nuestra Plataforma!</div>
                         <div class="email-meta">
-                            <strong>De:</strong> Equipo de Bienvenida<br>
-                            <strong>Para:</strong> [Destinatario]
+                            <strong>De:</strong> <span id="preview-sender">Equipo de Bienvenida</span><br>
+                            <strong>Para:</strong> <span id="preview-recipient-email">[Destinatario]</span>
                         </div>
                     </div>
                     
                     <div class="email-body" id="preview-message">
-                        Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
+                        Hola [NOMBRE],
+
+Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
 
 Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
 
@@ -370,11 +426,11 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                 <div class="status-info" id="status-info">Listo para enviar</div>
                 
                 <div class="actions">
-                    <button class="btn btn-secondary" id="test-btn">
-                        <i class="fas fa-vial"></i> Enviar Prueba
-                    </button>
-                    <button class="btn btn-primary" id="preview-btn">
+                    <button class="btn btn-secondary" id="preview-btn">
                         <i class="fas fa-eye"></i> Actualizar Vista
+                    </button>
+                    <button class="btn btn-info" id="test-btn-personalizado">
+                        <i class="fas fa-vial"></i> Prueba Personalizada
                     </button>
                     <button class="btn btn-success" id="send-btn">
                         <i class="fas fa-paper-plane"></i> Enviar a Todos
@@ -398,41 +454,136 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
             const recipientsInput = document.getElementById('recipients');
             const previewSubject = document.getElementById('preview-subject');
             const previewMessage = document.getElementById('preview-message');
+            const previewSender = document.getElementById('preview-sender');
             const progressBar = document.getElementById('progress-bar');
             const statusInfo = document.getElementById('status-info');
-            const testBtn = document.getElementById('test-btn');
             const previewBtn = document.getElementById('preview-btn');
             const sendBtn = document.getElementById('send-btn');
             const notification = document.getElementById('notification');
             const notificationText = document.getElementById('notification-text');
             const templateButtons = document.querySelectorAll('.template-btn');
-            
-            // Actualizar vista previa
-            function updatePreview() {
-                previewSubject.textContent = subjectInput.value;
-                previewMessage.innerHTML = messageInput.value.replace(/\n/g, '<br>');
-            }
-            
-            // Plantillas de correo
+            const recipientsList = document.querySelector('.recipients-list');
+            const fileUploadInput = document.getElementById('file-upload');
+            const previewNameSelect = document.getElementById('preview-name-select');
+            const previewRecipientEmail = document.getElementById('preview-recipient-email');
+            const testBtnPersonalizado = document.getElementById('test-btn-personalizado');
+
+            // Estructura de datos para destinatarios: [{name: 'Juan', email: 'j@e.com'}, ...]
+            let allRecipients = [];
+
+            // Plantillas de correo (modificadas para incluir [NOMBRE])
             const templates = {
                 formal: {
-                    subject: "Bienvenido a Nuestra Plataforma",
+                    subject: "Bienvenido a Nuestra Plataforma, [NOMBRE]",
                     sender: "Departamento de Atención al Cliente",
-                    message: "Estimado usuario,\n\nNos complace darle la bienvenida a nuestra plataforma. Agradecemos su confianza en nuestros servicios.\n\nQuedamos a su disposición para cualquier consulta o inquietud que pueda tener.\n\nAtentamente,\nEl Equipo de Soporte"
+                    message: "Estimado/a [NOMBRE],\n\nNos complace darle la bienvenida a nuestra plataforma. Agradecemos su confianza en nuestros servicios.\n\nQuedamos a su disposición para cualquier consulta o inquietud que pueda tener.\n\nAtentamente,\nEl Equipo de Soporte"
                 },
                 informal: {
-                    subject: "¡Te damos la bienvenida!",
+                    subject: "¡Te damos la bienvenida, [NOMBRE]!",
                     sender: "El equipo de comunidad",
-                    message: "¡Hola!\n\n¡Estamos encantados de tenerte con nosotros! Esperamos que te sientas como en casa y disfrutes de todos nuestros servicios.\n\nSi necesitas ayuda o tienes alguna pregunta, no dudes en contactarnos. Estamos aquí para ayudarte.\n\n¡Un saludo!"
+                    message: "¡Hola [NOMBRE]!\n\n¡Estamos encantados de tenerte con nosotros! Esperamos que te sientas como en casa y disfrutes de todos nuestros servicios.\n\nSi necesitas ayuda o tienes alguna pregunta, no dudes en contactarnos. Estamos aquí para ayudarte.\n\n¡Un saludo!"
                 },
                 promotional: {
-                    subject: "¡Bienvenido! Tu descuento especial te espera",
+                    subject: "¡[NOMBRE], tu descuento especial te espera!",
                     sender: "Ofertas Especiales",
-                    message: "¡Bienvenido a bordo!\n\nPara celebrar tu llegada, queremos ofrecerte un 20% de descuento en tu primera compra. Usa el código: BIENVENIDO20\n\nAdemás, tendrás acceso prioritario a nuestras promociones exclusivas.\n\n¡No esperes más para disfrutar de tus beneficios!\n\nEl equipo de Promociones"
+                    message: "¡Bienvenido a bordo, [NOMBRE]!\n\nPara celebrar tu llegada, queremos ofrecerte un 20% de descuento en tu primera compra. Usa el código: BIENVENIDO20\n\nAdemás, tendrás acceso prioritario a nuestras promociones exclusivas.\n\n¡No esperes más para disfrutar de tus beneficios!\n\nEl equipo de Promociones"
                 }
             };
-            
-            // Configurar plantilla seleccionada
+
+            // --- FUNCIONES CENTRALES ---
+
+            function parseRecipients(text) {
+                const lines = text.split(/[\n,]+/).map(line => line.trim()).filter(line => line);
+                const recipients = [];
+
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    let email = '';
+                    let name = 'Destinatario';
+
+                    if (parts.length >= 2 && parts[parts.length - 1].trim().includes('@')) {
+                        // Caso "Nombre, correo" o "Nombre1 Nombre2, correo"
+                        email = parts[parts.length - 1].trim();
+                        name = parts.slice(0, -1).join(',').trim() || 'Destinatario';
+                    } else if (parts.length === 1 && parts[0].includes('@')) {
+                        // Caso "correo"
+                        email = parts[0].trim();
+                        const localPart = email.split('@')[0];
+                        if (localPart) {
+                            name = localPart.replace(/[._]/g, ' '); 
+                            name = name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                        }
+                    }
+
+                    if (email.includes('@') && email.includes('.')) {
+                        recipients.push({ name: name, email: email });
+                    }
+                });
+                
+                // Eliminar duplicados por email
+                const uniqueRecipients = Array.from(new Map(recipients.map(item => [item['email'], item])).values());
+                return uniqueRecipients;
+            }
+
+            function updatePreview() {
+                const selectedEmail = previewNameSelect.value;
+                const recipient = allRecipients.find(r => r.email === selectedEmail) || { name: '[NOMBRE]', email: '[Destinatario]' };
+
+                const personalizedSubject = subjectInput.value.replace(/\[NOMBRE\]/g, recipient.name);
+                const personalizedMessage = messageInput.value.replace(/\[NOMBRE\]/g, recipient.name);
+
+                previewSubject.textContent = personalizedSubject;
+                previewSender.textContent = senderInput.value;
+                previewMessage.innerHTML = personalizedMessage.replace(/\n/g, '<br>');
+                previewRecipientEmail.textContent = recipient.email;
+            }
+
+            function updateRecipientsDisplay(recipients) {
+                allRecipients = recipients; 
+
+                recipientsList.innerHTML = '';
+                previewNameSelect.innerHTML = ''; 
+
+                if (recipients.length === 0) {
+                    statusInfo.textContent = "No hay destinatarios cargados.";
+                    return;
+                }
+
+                recipients.forEach(recipient => {
+                    // 1. Actualizar la lista de checkboxes
+                    const item = document.createElement('div');
+                    item.className = 'recipient-item';
+                    item.innerHTML = `
+                        <input type="checkbox" checked data-name="${recipient.name}" data-email="${recipient.email}">
+                        <div class="recipient-info">
+                            <span class="recipient-name">${recipient.name}</span>
+                            <span class="recipient-email">${recipient.email}</span>
+                        </div>
+                    `;
+                    recipientsList.appendChild(item);
+
+                    // 2. Actualizar el select de la vista previa
+                    const option = document.createElement('option');
+                    option.value = recipient.email;
+                    option.textContent = `${recipient.name} (${recipient.email})`;
+                    previewNameSelect.appendChild(option);
+                });
+                
+                updatePreview();
+                statusInfo.textContent = `Destinatarios cargados: ${recipients.length}`;
+            }
+
+            function showNotification(message, isSuccess = true) {
+                notificationText.textContent = message;
+                notification.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            // --- MANEJADORES DE EVENTOS ---
+            // Selector de Plantillas
             templateButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     templateButtons.forEach(b => b.classList.remove('active'));
@@ -448,48 +599,96 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                     updatePreview();
                 });
             });
-            
-            // Botón de actualizar vista previa
+
+            // Entrada de Destinatarios (TextArea)
+            recipientsInput.addEventListener('input', () => {
+                const recipients = parseRecipients(recipientsInput.value);
+                updateRecipientsDisplay(recipients);
+            });
+
+            // Carga de Archivo CSV/TXT
+            fileUploadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    const recipientsFromFile = parseRecipients(content);
+                    
+                    const existingRecipients = parseRecipients(recipientsInput.value);
+                    const combinedRecipientsMap = new Map();
+                    
+                    existingRecipients.forEach(r => combinedRecipientsMap.set(r.email, r));
+                    recipientsFromFile.forEach(r => combinedRecipientsMap.set(r.email, r));
+
+                    const combinedRecipients = Array.from(combinedRecipientsMap.values());
+                    
+                    recipientsInput.value = combinedRecipients.map(r => `${r.name}, ${r.email}`).join('\n');
+                    
+                    updateRecipientsDisplay(combinedRecipients);
+
+                    showNotification(`Se cargaron ${recipientsFromFile.length} correos nuevos/actualizados. Total: ${combinedRecipients.length}`, true);
+                    fileUploadInput.value = ''; 
+                };
+
+                reader.onerror = () => {
+                    showNotification('Error al leer el archivo.', false);
+                };
+                reader.readAsText(file);
+            });
+
+            // Eventos de Actualización de Vista Previa
             previewBtn.addEventListener('click', updatePreview);
-            
-            // Botón de enviar prueba
-            testBtn.addEventListener('click', function() {
-                statusInfo.textContent = "Enviando correo de prueba...";
+            subjectInput.addEventListener('input', updatePreview);
+            senderInput.addEventListener('input', updatePreview);
+            messageInput.addEventListener('input', updatePreview);
+            previewNameSelect.addEventListener('change', updatePreview);
+
+            // Botón Enviar Prueba Personalizada (Simulado)
+            testBtnPersonalizado.addEventListener('click', function() {
+                const selectedEmail = previewNameSelect.value;
+                const recipient = allRecipients.find(r => r.email === selectedEmail);
+
+                if (!recipient) {
+                    showNotification("Selecciona un destinatario en la lista de prueba.", false);
+                    return;
+                }
+
+                statusInfo.textContent = `Enviando correo de prueba a ${recipient.email} (${recipient.name})...`;
                 progressBar.style.width = "30%";
                 
                 setTimeout(() => {
                     progressBar.style.width = "100%";
-                    statusInfo.textContent = "Correo de prueba enviado a tu@email.com";
-                    
-                    notificationText.textContent = "Correo de prueba enviado con éxito";
-                    notification.classList.add('show');
-                    
-                    setTimeout(() => {
-                        notification.classList.remove('show');
-                    }, 3000);
+                    statusInfo.textContent = `Correo de prueba personalizado enviado a ${recipient.email}`;
+                    showNotification("Correo de prueba personalizado enviado con éxito", true);
                     
                     setTimeout(() => {
                         progressBar.style.width = "0%";
                         statusInfo.textContent = "Listo para enviar";
-                    }, 3000);
+                    }, 1500);
                 }, 1000);
             });
-            
-            // Botón de enviar a todos
-            sendBtn.addEventListener('click', async function() {
-                const emails = recipientsInput.value.split(/[\n,]+/).map(email => email.trim()).filter(email => email);
 
-                if (emails.length === 0) {
-                    statusInfo.textContent = "Error: No hay direcciones de correo";
+            // --- LÓGICA DE ENVÍO REAL AL BACKEND (CORREGIDA) ---
+            sendBtn.addEventListener('click', async function() {
+                // 1. Obtener solo los destinatarios seleccionados (checkeados)
+                const recipientsToSend = Array.from(recipientsList.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => ({
+                    name: checkbox.dataset.name,
+                    email: checkbox.dataset.email
+                }));
+                if (recipientsToSend.length === 0) {
+                    showNotification("Error: No hay destinatarios seleccionados.", false);
                     return;
                 }
-
-                statusInfo.textContent = `Enviando a ${emails.length} destinatarios...`;
+                const totalToSend = recipientsToSend.length;
+                statusInfo.textContent = `Iniciando envío a ${totalToSend} destinatarios...`;
                 progressBar.style.width = "10%";
                 sendBtn.disabled = true;
 
                 try {
-                    const response = await fetch('/send-emails', {
+                    // 2. Realizar la llamada real al backend
+                    const response = await fetch('http://localhost:3000/send-emails', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -498,49 +697,48 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                             subject: subjectInput.value,
                             sender: senderInput.value,
                             message: messageInput.value,
-                            recipients: emails
+                            recipients: recipientsToSend // Enviamos el array completo de objetos {name, email}
                         }),
                     });
 
-                    const data = await response.json();
+                    // El servidor ya hizo el trabajo, ahora actualizamos la UI
+                    progressBar.style.width = "75%"; 
+                    
+                    // Aseguramos que data se resuelva, incluso si es un error HTTP
+                    const data = await response.json().catch(() => ({ success: false, message: "Respuesta de servidor inválida o vacía." }));
 
-                    if (data.success) {
-                        let progress = 10;
-                        const interval = setInterval(() => {
-                            progress += 90 / emails.length;
-                            if (progress >= 100) {
-                                progress = 100;
-                                clearInterval(interval);
-                            }
-                            progressBar.style.width = `${progress}%`;
-                        }, 200);
-
-                        statusInfo.textContent = `Enviado a ${emails.length} destinatarios.`;
-                        notificationText.textContent = data.message;
-                        notification.classList.add('show');
-                    } else {
-                        statusInfo.textContent = `Error: ${data.message}`;
-                        notificationText.textContent = `Error: ${data.message}`;
-                        notification.classList.add('show');
+                    // 3. Evaluar la respuesta del servidor
+                    if (response.ok || response.status === 202) { // OK (200) o Aceptado con posibles errores (202)
+                        progressBar.style.width = "100%";
+                        const isSuccess = data.success || response.status === 200;
+                        statusInfo.textContent = data.message;
+                        showNotification(data.message, isSuccess);
+                    } else { // 4. El servidor reportó un error (ej. 400, 500)
+                        progressBar.style.width = "100%";
+                        const errorMessage = data.message || `Error ${response.status}: Error de conexión o configuración del servidor.`;
+                        statusInfo.textContent = `Error en el envío: ${errorMessage}`;
+                        showNotification(`Error: ${errorMessage}`, false);
                     }
+
                 } catch (error) {
-                    console.error('Error:', error);
-                    statusInfo.textContent = 'Error de conexión con el servidor.';
-                    notificationText.textContent = 'Error de conexión.';
-                    notification.classList.add('show');
+                    console.error('Error de conexión con el backend:', error);
+                    statusInfo.textContent = 'Error de conexión. Asegúrate de que el servidor (Node.js) esté corriendo en el puerto 3000.';
+                    showNotification('Error de conexión con el servidor.', false);
                 } finally {
                     setTimeout(() => {
                         progressBar.style.width = "0%";
                         statusInfo.textContent = "Listo para enviar";
-                        notification.classList.remove('show');
                         sendBtn.disabled = false;
                     }, 3000);
                 }
             });
-            
-            // Inicializar vista previa
-            updatePreview();
+
+            // Inicialización al cargar la página
+            const initialRecipients = parseRecipients(recipientsInput.value);
+            updateRecipientsDisplay(initialRecipients);
         });
     </script>
 </body>
 </html>
+
+
