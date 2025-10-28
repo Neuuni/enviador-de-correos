@@ -6,14 +6,13 @@
     <title>Envío Masivo de Correos de Bienvenida Personalizados</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Estilos generales */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
@@ -22,7 +21,6 @@
             align-items: center;
             padding: 20px;
         }
-        
         .container {
             background: white;
             border-radius: 12px;
@@ -111,7 +109,6 @@
             align-items: center;
             padding: 8px;
             border-bottom: 1px solid #eee;
-            justify-content: space-between;
         }
         
         .recipient-item:last-child {
@@ -122,10 +119,28 @@
             width: auto;
             margin-right: 10px;
         }
+        
         .recipient-info {
             flex-grow: 1;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+        }
+        
+        .recipient-name {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .recipient-email {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .recipient-fullname {
+            font-size: 0.8rem;
+            color: #888;
+            font-style: italic;
+            margin-top: 2px;
         }
         
         .email-preview {
@@ -178,6 +193,7 @@
             justify-content: center;
             gap: 8px;
             transition: all 0.3s;
+            flex: 1;
         }
         
         .btn-primary {
@@ -247,7 +263,7 @@
             color: white;
             border-radius: 6px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateX(100%);
+            transform: translateX(150%);
             opacity: 0;
             transition: all 0.3s;
             display: flex;
@@ -259,6 +275,10 @@
         .notification.show {
             transform: translateX(0);
             opacity: 1;
+        }
+        
+        .notification.error {
+            background: #dc3545;
         }
         
         .template-selector {
@@ -275,11 +295,13 @@
             background: white;
             cursor: pointer;
             text-align: center;
+            transition: all 0.3s;
         }
         
         .template-btn.active {
             border-color: #4A6FFF;
             background: #f0f4ff;
+            color: #4A6FFF;
         }
         
         .btn-file-upload {
@@ -290,6 +312,8 @@
             color: white;
             cursor: pointer;
             transition: background-color 0.3s;
+            border: none;
+            font-size: 14px;
         }
 
         .btn-file-upload:hover {
@@ -299,13 +323,76 @@
         #file-upload {
             display: none;
         }
+
+        .file-processing {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            border: 1px solid #b3d9ff;
+            display: none;
+        }
+        
+        .file-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+        
+        .no-recipients {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+        }
+        
+        .sending-status {
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            background: white;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .sending-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sending-item:last-child {
+            border-bottom: none;
+        }
+        
+        .sending-status-icon {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        
+        .sending-success {
+            color: #28a745;
+        }
+        
+        .sending-error {
+            color: #dc3545;
+        }
+        
+        .sending-pending {
+            color: #ffc107;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Envío Masivo de Correos de Bienvenida Personalizados</h1>
-            <p>Gestiona y envía correos de bienvenida a nuevos usuarios. Usa **[NOMBRE]** para personalizar.</p>
+            <p>Gestiona y envía correos de bienvenida a nuevos usuarios. Usa <strong>[NOMBRE]</strong> para personalizar.</p>
         </header>
     
         <div class="content">
@@ -338,54 +425,44 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="message">Mensaje de Bienvenida (Usa **[NOMBRE]** para personalizar)</label>
+                    <label for="message">Mensaje de Bienvenida (Usa <strong>[NOMBRE]</strong> para personalizar)</label>
                     <textarea id="message" placeholder="Escribe tu mensaje de bienvenida aquí...">Hola [NOMBRE],
 
-Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
+Para comenzar con éxito, es crucial que se familiaricen con nuestras herramientas digitales:
 
-Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
+Curso Introductorio de Plataforma: Consulten este curso para practicar y dominar el uso de la plataforma educativa antes de que inicien sus clases.
 
-¡Gracias por unirte a nosotros!
-</textarea>
+Tutoriales y Guías: Si necesitan ayuda adicional con el manejo de las plataformas, pueden encontrar todos los tutoriales detallados en el siguiente sitio web:
+
+https://docs.unineuuni.com/
+
+¡Gracias por unirte a nosotros!🤗</textarea>
                 </div>
                 
                 <h2>Destinatarios</h2>
                 
                 <div class="form-group">
-                    <label for="recipients">Lista de Correos y Nombres (Formato: **Nombre, correo@dominio.com** o solo correo)</label>
-                    <textarea id="recipients" placeholder="Ingresa los destinatarios separados por líneas o comas. Ej: Juan Pérez, juan@ejemplo.com" rows="5">Juan Pérez, ejemplo1@correo.com
-Ana García, ejemplo2@correo.com
-ejemplo3@correo.com</textarea>
-                </div>
-
-                <div class="form-group">
                     <label for="file-upload" class="btn btn-secondary btn-file-upload">
-                        <i class="fas fa-file-upload"></i> Cargar **CSV o TXT** (Nombre, Correo)
+                        <i class="fas fa-file-upload"></i> Cargar Archivo (TXT/CSV)
                     </label>
                     <input type="file" id="file-upload" accept=".txt,.csv">
+                    <div class="file-info">
+                        <strong>Formatos soportados:</strong><br>
+                        • CSV: Nombre,Correo<br>
+                        • TXT con pipes: | Nombre | Correo |
+                    </div>
                 </div>
 
-                <div class="recipients-list">
-                    <div class="recipient-item">
-                        <input type="checkbox" checked data-name="Juan Pérez" data-email="ejemplo1@correo.com">
-                        <div class="recipient-info">
-                            <span class="recipient-name">Juan Pérez</span>
-                            <span class="recipient-email">ejemplo1@correo.com</span>
-                        </div>
-                    </div>
-                     <div class="recipient-item">
-                        <input type="checkbox" checked data-name="Ana García" data-email="ejemplo2@correo.com">
-                        <div class="recipient-info">
-                            <span class="recipient-name">Ana García</span>
-                            <span class="recipient-email">ejemplo2@correo.com</span>
-                        </div>
-                    </div>
-                    <div class="recipient-item">
-                        <input type="checkbox" checked data-name="Destinatario" data-email="ejemplo3@correo.com">
-                        <div class="recipient-info">
-                            <span class="recipient-name">Destinatario</span>
-                            <span class="recipient-email">ejemplo3@correo.com</span>
-                        </div>
+                <div id="file-processing" class="file-processing">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Procesando archivo...</span>
+                </div>
+
+                <div class="recipients-list" id="recipients-list-container">
+                    <div class="no-recipients">
+                        <i class="fas fa-users" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <div>No hay destinatarios cargados</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px;">Carga un archivo para ver los destinatarios aquí</div>
                     </div>
                 </div>
             </div>
@@ -395,8 +472,9 @@ ejemplo3@correo.com</textarea>
                 
                 <div class="form-group">
                     <label for="preview-name-select">Personalizar Vista Previa para:</label>
-                    <select id="preview-name-select" class="form-control">
-                        </select>
+                    <select id="preview-name-select">
+                        <option value="">Selecciona un destinatario</option>
+                    </select>
                 </div>
 
                 <div class="email-preview">
@@ -409,13 +487,15 @@ ejemplo3@correo.com</textarea>
                     </div>
                     
                     <div class="email-body" id="preview-message">
-                        Hola [NOMBRE],
+Para comenzar con éxito, es crucial que se familiaricen con nuestras herramientas digitales:
 
-Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
+Curso Introductorio de Plataforma: Consulten este curso para practicar y dominar el uso de la plataforma educativa antes de que inicien sus clases.
 
-Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
+Tutoriales y Guías: Si necesitan ayuda adicional con el manejo de las plataformas, pueden encontrar todos los tutoriales detallados en el siguiente sitio web:
 
-¡Gracias por unirte a nosotros!
+https://docs.unineuuni.com/
+
+¡Gracias por unirte a nosotros!🤗
                     </div>
                 </div>
                 
@@ -424,6 +504,10 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                 </div>
                 
                 <div class="status-info" id="status-info">Listo para enviar</div>
+                
+                <div class="sending-status" id="sending-status">
+                    <!-- Aquí se mostrará el estado de envío de cada correo -->
+                </div>
                 
                 <div class="actions">
                     <button class="btn btn-secondary" id="preview-btn">
@@ -451,7 +535,6 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
             const subjectInput = document.getElementById('subject');
             const senderInput = document.getElementById('sender');
             const messageInput = document.getElementById('message');
-            const recipientsInput = document.getElementById('recipients');
             const previewSubject = document.getElementById('preview-subject');
             const previewMessage = document.getElementById('preview-message');
             const previewSender = document.getElementById('preview-sender');
@@ -462,21 +545,23 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
             const notification = document.getElementById('notification');
             const notificationText = document.getElementById('notification-text');
             const templateButtons = document.querySelectorAll('.template-btn');
-            const recipientsList = document.querySelector('.recipients-list');
+            const recipientsList = document.getElementById('recipients-list-container');
             const fileUploadInput = document.getElementById('file-upload');
             const previewNameSelect = document.getElementById('preview-name-select');
             const previewRecipientEmail = document.getElementById('preview-recipient-email');
             const testBtnPersonalizado = document.getElementById('test-btn-personalizado');
+            const fileProcessing = document.getElementById('file-processing');
+            const sendingStatus = document.getElementById('sending-status');
 
-            // Estructura de datos para destinatarios: [{name: 'Juan', email: 'j@e.com'}, ...]
+            // Estructura de datos para destinatarios
             let allRecipients = [];
 
-            // Plantillas de correo (modificadas para incluir [NOMBRE])
+            // Plantillas de correo
             const templates = {
                 formal: {
                     subject: "Bienvenido a Nuestra Plataforma, [NOMBRE]",
                     sender: "Departamento de Atención al Cliente",
-                    message: "Estimado/a [NOMBRE],\n\nNos complace darle la bienvenida a nuestra plataforma. Agradecemos su confianza en nuestros servicios.\n\nQuedamos a su disposición para cualquier consulta o inquietud que pueda tener.\n\nAtentamente,\nEl Equipo de Soporte"
+                    message: "Estimado/a [NOMBRE],\n\n¡Les damos la bienvenida a la institución!Para comenzar con éxito, es crucial que se familiaricen con nuestras herramientas digitales: Curso Introductorio de Plataforma: Consulten este curso para practicar y dominar el uso de la plataforma educativa antes de que inicien sus clases.Tutoriales y Guías: Si necesitan ayuda adicional con el manejo de las plataformas, pueden encontrar todos los tutoriales detallados en el siguiente sitio web:!"
                 },
                 informal: {
                     subject: "¡Te damos la bienvenida, [NOMBRE]!",
@@ -492,65 +577,50 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
 
             // --- FUNCIONES CENTRALES ---
 
-            function parseRecipients(text) {
-                const lines = text.split(/[\n,]+/).map(line => line.trim()).filter(line => line);
-                const recipients = [];
-
-                lines.forEach(line => {
-                    const parts = line.split(',');
-                    let email = '';
-                    let name = 'Destinatario';
-
-                    if (parts.length >= 2 && parts[parts.length - 1].trim().includes('@')) {
-                        // Caso "Nombre, correo" o "Nombre1 Nombre2, correo"
-                        email = parts[parts.length - 1].trim();
-                        name = parts.slice(0, -1).join(',').trim() || 'Destinatario';
-                    } else if (parts.length === 1 && parts[0].includes('@')) {
-                        // Caso "correo"
-                        email = parts[0].trim();
-                        const localPart = email.split('@')[0];
-                        if (localPart) {
-                            name = localPart.replace(/[._]/g, ' '); 
-                            name = name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                        }
-                    }
-
-                    if (email.includes('@') && email.includes('.')) {
-                        recipients.push({ name: name, email: email });
-                    }
-                });
-                
-                // Eliminar duplicados por email
-                const uniqueRecipients = Array.from(new Map(recipients.map(item => [item['email'], item])).values());
-                return uniqueRecipients;
-            }
-
             function updatePreview() {
                 const selectedEmail = previewNameSelect.value;
-                const recipient = allRecipients.find(r => r.email === selectedEmail) || { name: '[NOMBRE]', email: '[Destinatario]' };
+                let recipientName = '[NOMBRE]';
+                let recipientEmail = '[Destinatario]';
 
-                const personalizedSubject = subjectInput.value.replace(/\[NOMBRE\]/g, recipient.name);
-                const personalizedMessage = messageInput.value.replace(/\[NOMBRE\]/g, recipient.name);
+                if (selectedEmail) {
+                    const recipient = allRecipients.find(r => r.email === selectedEmail);
+                    if (recipient) {
+                        recipientName = recipient.name;
+                        recipientEmail = recipient.email;
+                    }
+                }
+
+                const personalizedSubject = subjectInput.value.replace(/\[NOMBRE\]/g, recipientName);
+                const personalizedMessage = messageInput.value.replace(/\[NOMBRE\]/g, recipientName);
 
                 previewSubject.textContent = personalizedSubject;
                 previewSender.textContent = senderInput.value;
                 previewMessage.innerHTML = personalizedMessage.replace(/\n/g, '<br>');
-                previewRecipientEmail.textContent = recipient.email;
+                previewRecipientEmail.textContent = recipientEmail;
             }
 
             function updateRecipientsDisplay(recipients) {
                 allRecipients = recipients; 
-
                 recipientsList.innerHTML = '';
-                previewNameSelect.innerHTML = ''; 
+                previewNameSelect.innerHTML = '<option value="">Selecciona un destinatario</option>'; 
 
                 if (recipients.length === 0) {
+                    recipientsList.innerHTML = `
+                        <div class="no-recipients">
+                            <i class="fas fa-users" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
+                            <div>No hay destinatarios cargados</div>
+                            <div style="font-size: 0.8rem; margin-top: 5px;">Carga un archivo para ver los destinatarios aquí</div>
+                        </div>
+                    `;
                     statusInfo.textContent = "No hay destinatarios cargados.";
+                    previewBtn.disabled = true;
+                    testBtnPersonalizado.disabled = true;
+                    sendBtn.disabled = true;
                     return;
                 }
 
                 recipients.forEach(recipient => {
-                    // 1. Actualizar la lista de checkboxes
+                    // Actualizar la lista de checkboxes
                     const item = document.createElement('div');
                     item.className = 'recipient-item';
                     item.innerHTML = `
@@ -558,11 +628,12 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                         <div class="recipient-info">
                             <span class="recipient-name">${recipient.name}</span>
                             <span class="recipient-email">${recipient.email}</span>
+                            ${recipient.fullName ? `<span class="recipient-fullname">${recipient.fullName}</span>` : ''}
                         </div>
                     `;
                     recipientsList.appendChild(item);
 
-                    // 2. Actualizar el select de la vista previa
+                    // Actualizar el select de la vista previa
                     const option = document.createElement('option');
                     option.value = recipient.email;
                     option.textContent = `${recipient.name} (${recipient.email})`;
@@ -571,18 +642,163 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                 
                 updatePreview();
                 statusInfo.textContent = `Destinatarios cargados: ${recipients.length}`;
+                
+                // Habilitar botones
+                previewBtn.disabled = false;
+                testBtnPersonalizado.disabled = false;
+                sendBtn.disabled = false;
             }
 
             function showNotification(message, isSuccess = true) {
                 notificationText.textContent = message;
-                notification.style.backgroundColor = isSuccess ? '#28a745' : '#dc3545';
+                if (isSuccess) {
+                    notification.style.backgroundColor = '#28a745';
+                    notification.classList.remove('error');
+                } else {
+                    notification.style.backgroundColor = '#dc3545';
+                    notification.classList.add('error');
+                }
                 notification.classList.add('show');
                 
                 setTimeout(() => {
                     notification.classList.remove('show');
-                }, 3000);
+                }, 4000);
             }
+
+            // Función para parsear el contenido del archivo
+            function parseFileContent(content) {
+                const recipients = [];
+                const lines = content.split('\n').filter(line => line.trim());
+                
+                if (lines.length === 0) {
+                    throw new Error('El archivo está vacío');
+                }
+
+                // Detectar formato
+                const firstLine = lines[0];
+                const hasPipes = firstLine.includes('|');
+                const hasCommas = firstLine.includes(',');
+
+                lines.forEach((line, index) => {
+                    if (hasPipes) {
+                        // Formato con pipes: | Nombre | Email |
+                        const parts = line.split('|').filter(part => part.trim());
+                        if (parts.length >= 2 && index > 0) { // Saltar encabezados
+                            recipients.push({
+                                name: parts[0].trim(),
+                                email: parts[1].trim(),
+                                fullName: parts[2] ? parts[2].trim() : ''
+                            });
+                        }
+                    } else if (hasCommas) {
+                        // Formato CSV: Nombre,Email
+                        const parts = line.split(',');
+                        if (parts.length >= 2 && index > 0) { // Saltar encabezados
+                            recipients.push({
+                                name: parts[0].trim(),
+                                email: parts[1].trim(),
+                                fullName: parts[2] ? parts[2].trim() : ''
+                            });
+                        }
+                    } else {
+                        // Formato desconocido
+                        if (index > 0 && line.trim()) {
+                            const emailMatch = line.match(/\S+@\S+\.\S+/);
+                            if (emailMatch) {
+                                const email = emailMatch[0];
+                                const name = line.replace(email, '').trim();
+                                recipients.push({
+                                    name: name || 'Usuario',
+                                    email: email,
+                                    fullName: ''
+                                });
+                            }
+                        }
+                    }
+                });
+                
+                return recipients;
+            }
+
+            // ✅ FUNCIÓN CORREGIDA - Enviar correos REALES
+            async function sendEmails(recipients) {
+                sendingStatus.style.display = 'block';
+                sendingStatus.innerHTML = '';
+                
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (let i = 0; i < recipients.length; i++) {
+                    const recipient = recipients[i];
+                    
+                    // Mostrar estado de envío
+                    const statusItem = document.createElement('div');
+                    statusItem.className = 'sending-item';
+                    statusItem.innerHTML = `
+                        <span class="sending-status-icon sending-pending"><i class="fas fa-clock"></i></span>
+                        Enviando a: ${recipient.name} (${recipient.email})
+                    `;
+                    sendingStatus.appendChild(statusItem);
+                    sendingStatus.scrollTop = sendingStatus.scrollHeight;
+                    
+                    try {
+                        // ✅ ENVÍO REAL - Hacer petición al servidor
+                        const response = await fetch('/send-bulk-emails', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                recipients: [recipient], // Enviar un destinatario a la vez
+                                subject: subjectInput.value,
+                                message: messageInput.value,
+                                sender: senderInput.value
+                            })
+                        });
+
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            statusItem.innerHTML = `
+                                <span class="sending-status-icon sending-success"><i class="fas fa-check-circle"></i></span>
+                                ✅ Enviado a: ${recipient.name} (${recipient.email})
+                            `;
+                            successCount++;
+                            console.log(`✅ Correo enviado a ${recipient.email}:`, result.messageId);
+                        } else {
+                            statusItem.innerHTML = `
+                                <span class="sending-status-icon sending-error"><i class="fas fa-exclamation-circle"></i></span>
+                                ❌ Error: ${recipient.name} (${recipient.email}) - ${result.message}
+                            `;
+                            errorCount++;
+                            console.log(`❌ Error con ${recipient.email}:`, result.message);
+                        }
+                        
+                    } catch (error) {
+                        statusItem.innerHTML = `
+                            <span class="sending-status-icon sending-error"><i class="fas fa-exclamation-circle"></i></span>
+                            ❌ Error de conexión: ${recipient.name} (${recipient.email})
+                        `;
+                        errorCount++;
+                        console.log(`❌ Error de red con ${recipient.email}:`, error.message);
+                    }
+                    
+                    // Actualizar progreso
+                    const progress = ((i + 1) / recipients.length) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    statusInfo.textContent = `Enviando... ${i + 1}/${recipients.length} (${successCount} éxitos, ${errorCount} errores)`;
+                    
+                    // Pequeña pausa entre correos para no saturar el servidor
+                    if (i < recipients.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                
+                return { successCount, errorCount };
+            }
+
             // --- MANEJADORES DE EVENTOS ---
+            
             // Selector de Plantillas
             templateButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -600,42 +816,39 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                 });
             });
 
-            // Entrada de Destinatarios (TextArea)
-            recipientsInput.addEventListener('input', () => {
-                const recipients = parseRecipients(recipientsInput.value);
-                updateRecipientsDisplay(recipients);
-            });
-
             // Carga de Archivo CSV/TXT
-            fileUploadInput.addEventListener('change', (event) => {
+            fileUploadInput.addEventListener('change', async (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const content = e.target.result;
-                    const recipientsFromFile = parseRecipients(content);
-                    
-                    const existingRecipients = parseRecipients(recipientsInput.value);
-                    const combinedRecipientsMap = new Map();
-                    
-                    existingRecipients.forEach(r => combinedRecipientsMap.set(r.email, r));
-                    recipientsFromFile.forEach(r => combinedRecipientsMap.set(r.email, r));
+                // Validar tipo de archivo
+                const validTypes = ['text/plain', 'text/csv', 'application/vnd.ms-excel'];
+                if (!validTypes.includes(file.type) && !file.name.match(/\.(txt|csv)$/i)) {
+                    showNotification('Error: El archivo debe ser TXT o CSV', false);
+                    fileUploadInput.value = '';
+                    return;
+                }
 
-                    const combinedRecipients = Array.from(combinedRecipientsMap.values());
+                fileProcessing.style.display = 'block';
+                
+                try {
+                    const text = await file.text();
+                    const recipients = parseFileContent(text);
                     
-                    recipientsInput.value = combinedRecipients.map(r => `${r.name}, ${r.email}`).join('\n');
+                    if (recipients.length === 0) {
+                        throw new Error('No se encontraron destinatarios en el formato esperado. Use CSV (Nombre,Correo) o TXT con pipes (| Nombre | Correo |)');
+                    }
                     
-                    updateRecipientsDisplay(combinedRecipients);
-
-                    showNotification(`Se cargaron ${recipientsFromFile.length} correos nuevos/actualizados. Total: ${combinedRecipients.length}`, true);
-                    fileUploadInput.value = ''; 
-                };
-
-                reader.onerror = () => {
-                    showNotification('Error al leer el archivo.', false);
-                };
-                reader.readAsText(file);
+                    updateRecipientsDisplay(recipients);
+                    showNotification(`Se cargaron ${recipients.length} destinatarios correctamente`, true);
+                    
+                } catch (error) {
+                    console.error('Error procesando archivo:', error);
+                    showNotification('Error: ' + error.message, false);
+                } finally {
+                    fileProcessing.style.display = 'none';
+                    fileUploadInput.value = '';
+                }
             });
 
             // Eventos de Actualización de Vista Previa
@@ -645,8 +858,8 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
             messageInput.addEventListener('input', updatePreview);
             previewNameSelect.addEventListener('change', updatePreview);
 
-            // Botón Enviar Prueba Personalizada (Simulado)
-            testBtnPersonalizado.addEventListener('click', function() {
+            // ✅ BOTÓN CORREGIDO - Enviar Prueba Personalizada REAL
+            testBtnPersonalizado.addEventListener('click', async function() {
                 const selectedEmail = previewNameSelect.value;
                 const recipient = allRecipients.find(r => r.email === selectedEmail);
 
@@ -655,90 +868,87 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                     return;
                 }
 
-                statusInfo.textContent = `Enviando correo de prueba a ${recipient.email} (${recipient.name})...`;
+                statusInfo.textContent = `Enviando correo de prueba REAL a ${recipient.email}...`;
                 progressBar.style.width = "30%";
+                testBtnPersonalizado.disabled = true;
                 
-                setTimeout(() => {
-                    progressBar.style.width = "100%";
-                    statusInfo.textContent = `Correo de prueba personalizado enviado a ${recipient.email}`;
-                    showNotification("Correo de prueba personalizado enviado con éxito", true);
-                    
-                    setTimeout(() => {
-                        progressBar.style.width = "0%";
-                        statusInfo.textContent = "Listo para enviar";
-                    }, 1500);
-                }, 1000);
-            });
-
-            // --- LÓGICA DE ENVÍO REAL AL BACKEND (CORREGIDA) ---
-            sendBtn.addEventListener('click', async function() {
-                // 1. Obtener solo los destinatarios seleccionados (checkeados)
-                const recipientsToSend = Array.from(recipientsList.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => ({
-                    name: checkbox.dataset.name,
-                    email: checkbox.dataset.email
-                }));
-                if (recipientsToSend.length === 0) {
-                    showNotification("Error: No hay destinatarios seleccionados.", false);
-                    return;
-                }
-                const totalToSend = recipientsToSend.length;
-                statusInfo.textContent = `Iniciando envío a ${totalToSend} destinatarios...`;
-                progressBar.style.width = "10%";
-                sendBtn.disabled = true;
-
                 try {
-                    // 2. Realizar la llamada real al backend
-                    const response = await fetch('http://localhost:3000/send-emails', {
+                    // ✅ ENVÍO REAL
+                    const response = await fetch('/send-test-email', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
+                            to: recipient.email,
                             subject: subjectInput.value,
-                            sender: senderInput.value,
-                            message: messageInput.value,
-                            recipients: recipientsToSend // Enviamos el array completo de objetos {name, email}
-                        }),
+                            message: messageInput.value
+                        })
                     });
 
-                    // El servidor ya hizo el trabajo, ahora actualizamos la UI
-                    progressBar.style.width = "75%"; 
+                    const result = await response.json();
                     
-                    // Aseguramos que data se resuelva, incluso si es un error HTTP
-                    const data = await response.json().catch(() => ({ success: false, message: "Respuesta de servidor inválida o vacía." }));
-
-                    // 3. Evaluar la respuesta del servidor
-                    if (response.ok || response.status === 202) { // OK (200) o Aceptado con posibles errores (202)
+                    if (result.success) {
                         progressBar.style.width = "100%";
-                        const isSuccess = data.success || response.status === 200;
-                        statusInfo.textContent = data.message;
-                        showNotification(data.message, isSuccess);
-                    } else { // 4. El servidor reportó un error (ej. 400, 500)
+                        statusInfo.textContent = `✅ Correo REAL enviado a ${recipient.email}`;
+                        showNotification(`✅ Correo REAL enviado a ${recipient.email} - Revisa tu bandeja`, true);
+                        console.log('Correo de prueba enviado:', result.messageId);
+                    } else {
                         progressBar.style.width = "100%";
-                        const errorMessage = data.message || `Error ${response.status}: Error de conexión o configuración del servidor.`;
-                        statusInfo.textContent = `Error en el envío: ${errorMessage}`;
-                        showNotification(`Error: ${errorMessage}`, false);
+                        statusInfo.textContent = `❌ Error: ${result.message}`;
+                        showNotification(`❌ Error: ${result.message}`, false);
                     }
-
+                    
                 } catch (error) {
-                    console.error('Error de conexión con el backend:', error);
-                    statusInfo.textContent = 'Error de conexión. Asegúrate de que el servidor (Node.js) esté corriendo en el puerto 3000.';
-                    showNotification('Error de conexión con el servidor.', false);
+                    progressBar.style.width = "100%";
+                    statusInfo.textContent = "❌ Error de conexión con el servidor";
+                    showNotification("❌ Error de conexión con el servidor", false);
+                    console.error('Error:', error);
                 } finally {
+                    testBtnPersonalizado.disabled = false;
                     setTimeout(() => {
                         progressBar.style.width = "0%";
                         statusInfo.textContent = "Listo para enviar";
-                        sendBtn.disabled = false;
                     }, 3000);
                 }
             });
 
-            // Inicialización al cargar la página
-            const initialRecipients = parseRecipients(recipientsInput.value);
-            updateRecipientsDisplay(initialRecipients);
+            // Envío masivo
+            sendBtn.addEventListener('click', async function() {
+                const recipientsToSend = Array.from(recipientsList.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => ({
+                    name: checkbox.dataset.name,
+                    email: checkbox.dataset.email
+                }));
+                
+                if (recipientsToSend.length === 0) {
+                    showNotification("Error: No hay destinatarios seleccionados.", false);
+                    return;
+                }
+                
+                const totalToSend = recipientsToSend.length;
+                statusInfo.textContent = `Iniciando envío REAL a ${totalToSend} destinatarios...`;
+                progressBar.style.width = "10%";
+                sendBtn.disabled = true;
+
+                // Enviar correos REALES
+                const result = await sendEmails(recipientsToSend);
+                
+                // Mostrar resultado final
+                statusInfo.textContent = `Envío REAL completado: ${result.successCount} éxitos, ${result.errorCount} errores`;
+                showNotification(`✅ ${result.successCount} correos REALES enviados | ❌ ${result.errorCount} errores`, result.errorCount === 0);
+                
+                setTimeout(() => {
+                    progressBar.style.width = "0%";
+                    sendBtn.disabled = false;
+                }, 3000);
+            });
+
+            // Inicialización
+            statusInfo.textContent = "Carga un archivo para comenzar";
+            previewBtn.disabled = true;
+            testBtnPersonalizado.disabled = true;
+            sendBtn.disabled = true;
         });
     </script>
 </body>
 </html>
-
-

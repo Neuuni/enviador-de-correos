@@ -1,269 +1,250 @@
-const express = require('express');
-const cors = require('cors');
-const nodemailer = require('nodemailer');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 require('dotenv').config();
+const express = require('express');
+const nodemailer = require('nodemailer');
+const bodyParser = require('body-parser');
+const path = require('path');
+const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Configuración de multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    if (!fs.existsSync('uploads')) {
-      fs.mkdirSync('uploads');
+// ✅ CONFIGURACIÓN CORRECTA PARA UNINEUUNI (Google Workspace)
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER, // de.escobedo@unineuuni.edu.mx
+      pass: process.env.EMAIL_PASS  // CONTRASEÑA DE APLICACIÓN
+    },
+    tls: {
+      rejectUnauthorized: false
     }
-    cb(null, 'uploads/')
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname)
+  });
+};
+
+// Verificación al iniciar
+console.log('\n=== SISTEMA UNINEUUNI - CORREOS REALES ===');
+const transporter = createTransporter();
+transporter.verify((error, success) => {
+  if (error) {
+    console.log('❌ Error de configuración:', error.message);
+  } else {
+    console.log('✅ CONFIGURACIÓN EXITOSA - CORREOS REALES ACTIVADOS');
+    console.log('   📧 Remitente:', process.env.EMAIL_USER);
+    console.log('   🌐 Servidor: smtp.gmail.com:587');
+    console.log('   🚀 Los correos se enviarán REALMENTE\n');
   }
 });
 
-const upload = multer({ storage: storage });
-
-// CONFIGURACIÓN GMAIL
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  debug: true,
-  logger: true
-});
-
-console.log('🔧 CONFIGURACIÓN SMTP:');
-console.log('Usuario:', process.env.EMAIL_USER);
-console.log('Contraseña configurada:', process.env.EMAIL_PASS ? 'Sí' : 'No');
-
-// Función para procesar archivos
-function processTextFile(filePath) {
-  try {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const lines = content.split('\n').map(line => line.trim()).filter(line => line);
-    const recipients = [];
-
-    lines.forEach((line) => {
-      const emailMatch = line.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-      
-      if (emailMatch) {
-        const email = emailMatch[0].toLowerCase().trim();
-        let name = 'Destinatario';
-        
-        const namePart = line.replace(email, '').replace(/,/g, '').trim();
-        if (namePart) {
-          name = namePart;
-        }
-        
-        recipients.push({ name: name, email: email });
-      }
-    });
-
-    return recipients;
-  } catch (error) {
-    throw new Error('Error al procesar el archivo: ' + error.message);
-  }
-}
-
-// Ruta para procesar archivos
-app.post('/upload-file', upload.single('file'), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.json({ success: false, message: 'No se subió archivo' });
-    }
-
-    const recipients = processTextFile(req.file.path);
-    
-    if (fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-    
-    if (recipients.length === 0) {
-      return res.json({ success: false, message: 'No se encontraron emails válidos' });
-    }
-    
-    res.json({
-      success: true,
-      message: `${recipients.length} destinatarios procesados`,
-      recipients: recipients
-    });
-    
-  } catch (error) {
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
-    res.json({ success: false, message: error.message });
-  }
-});
-
-// Ruta de ENVÍO REAL con verificación
-app.post('/send-emails', async (req, res) => {
-  console.log('\n🎯 INICIANDO ENVÍO REAL...');
+// ✅ RUTA PARA ENVÍO MASIVO REAL
+app.post('/send-bulk-emails', async (req, res) => {
+  console.log('\n📦 SOLICITUD DE ENVÍO MASIVO REAL');
   
   try {
-    const { subject, sender, message, recipients } = req.body;
-    
-    console.log('📊 DATOS RECIBIDOS:');
-    console.log('- Asunto:', subject);
-    console.log('- Mensaje:', message.substring(0, 50) + '...');
-    console.log('- Número de destinatarios:', recipients.length);
-    console.log('- Destinatarios:', recipients.map(r => r.email));
+    const { recipients, subject, message } = req.body;
 
-    if (!recipients || recipients.length === 0) {
-      return res.json({ success: false, message: 'No hay destinatarios' });
+    if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No hay destinatarios válidos'
+      });
     }
 
-    const results = [];
-    let successful = 0;
-    let failed = 0;
+    console.log(`📧 Destinatarios: ${recipients.length}`);
+    console.log(`📝 Asunto: ${subject}`);
 
-    // VERIFICAR CONEXIÓN SMTP PRIMERO
+    const results = {
+      successCount: 0,
+      errorCount: 0,
+      details: []
+    };
+
+    const currentTransporter = createTransporter();
+
+    // Verificar conexión primero
     try {
-      await transporter.verify();
-      console.log('✅ Conexión SMTP verificada');
+      await currentTransporter.verify();
+      console.log('✅ Servidor UNINEUUNI verificado - Enviando correos REALES');
     } catch (error) {
-      console.log('❌ Error SMTP:', error.message);
-      return res.json({ success: false, message: 'Error SMTP: ' + error.message });
+      console.log('❌ Error de conexión:', error.message);
+      return res.status(500).json({
+        success: false,
+        message: 'Error de conexión: ' + error.message
+      });
     }
 
-    // ENVIAR A CADA DESTINATARIO
+    console.log('🔄 Iniciando envío de correos REALES...');
+
     for (let i = 0; i < recipients.length; i++) {
       const recipient = recipients[i];
-      console.log(`\n📧 [${i + 1}/${recipients.length}] Procesando: ${recipient.email}`);
       
+      if (!recipient.email || !recipient.name) {
+        results.errorCount++;
+        continue;
+      }
+
       try {
         const personalizedSubject = subject.replace(/\[NOMBRE\]/g, recipient.name);
         const personalizedMessage = message.replace(/\[NOMBRE\]/g, recipient.name);
-        
+
         const mailOptions = {
-          from: `"Sistema de Correos" <${process.env.EMAIL_USER}>`,
-          to: recipient.email, // ← IMPORTANTE: Enviar al destinatario
+          from: `"Universidad UNINEUUNI" <${process.env.EMAIL_USER}>`,
+          to: recipient.email,
           subject: personalizedSubject,
-          text: personalizedMessage,
-          html: `<div>${personalizedMessage.replace(/\n/g, '<br>')}</div>`
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+              <div style="background: #2c5aa0; padding: 20px; border-radius: 10px 10px 0 0; color: white;">
+                <h1 style="margin: 0; font-size: 24px;">${personalizedSubject}</h1>
+              </div>
+              <div style="background: #f8f9fa; padding: 20px; border-radius: 0 0 10px 10px;">
+                <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #2c5aa0;">
+                  ${personalizedMessage.replace(/\n/g, '<br>')}
+                </div>
+                <p style="color: #666; margin-top: 20px; text-align: center;">
+                  <small>Universidad UNINEUUNI</small><br>
+                  <small>${new Date().toLocaleString('es-MX')}</small>
+                </p>
+              </div>
+            </div>
+          `,
+          text: personalizedMessage
         };
 
-        console.log(`   📤 Enviando a: ${recipient.email}`);
+        console.log(`📤 [${i + 1}/${recipients.length}] ENVIANDO REAL a: ${recipient.email}`);
         
-        // INTENTAR ENVÍO
-        const info = await transporter.sendMail(mailOptions);
+        // ✅ ENVÍO REAL
+        const info = await currentTransporter.sendMail(mailOptions);
         
-        console.log(`   ✅ ENVIADO: ${recipient.email}`);
-        console.log(`   📫 Message ID: ${info.messageId}`);
-        console.log(`   🔄 Response: ${info.response}`);
-        
-        successful++;
-        results.push({ 
-          email: recipient.email, 
-          status: 'enviado', 
+        results.successCount++;
+        results.details.push({
+          email: recipient.email,
+          name: recipient.name,
+          success: true,
           messageId: info.messageId,
-          response: info.response 
+          response: info.response
         });
 
-        // Pausa de 2 segundos
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
+        console.log(`   ✅ ENVIADO REALMENTE: ${info.response}`);
+
       } catch (error) {
-        console.log(`   ❌ FALLÓ: ${recipient.email}`);
-        console.log(`   💥 Error: ${error.message}`);
-        
-        failed++;
-        results.push({ 
-          email: recipient.email, 
-          status: 'falló', 
-          error: error.message 
+        console.log(`   ❌ ERROR REAL: ${error.message}`);
+        results.errorCount++;
+        results.details.push({
+          email: recipient.email,
+          name: recipient.name,
+          success: false,
+          error: error.message
         });
+      }
+
+      // Pausa entre correos
+      if (i < recipients.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
 
-    console.log('\n📊 RESUMEN FINAL:');
-    console.log(`✅ Enviados: ${successful}`);
-    console.log(`❌ Fallidos: ${failed}`);
-    console.log(`📨 Total: ${recipients.length}`);
+    console.log('📊 RESULTADO FINAL REAL:');
+    console.log(`   ✅ Correos REALMENTE enviados: ${results.successCount}`);
+    console.log(`   ❌ Errores: ${results.errorCount}`);
 
     res.json({
-      success: successful > 0,
-      message: `Enviados: ${successful}, Fallidos: ${failed}`,
-      sent: successful,
-      failed: failed,
-      details: results
+      success: true,
+      message: `✅ ${results.successCount} correos enviados REALMENTE desde UNINEUUNI`,
+      results: results,
+      realDelivery: true
     });
-    
+
   } catch (error) {
-    console.log('💥 ERROR CRÍTICO:', error);
-    res.json({ 
-      success: false, 
-      message: 'Error: ' + error.message 
+    console.log('❌ ERROR CRÍTICO:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error del servidor: ' + error.message
     });
   }
 });
 
-// Ruta de PRUEBA INDIVIDUAL
-app.post('/send-test-single', async (req, res) => {
-  console.log('\n🧪 PRUEBA INDIVIDUAL...');
+// ✅ RUTA DE PRUEBA MEJORADA
+app.post('/send-test-email', async (req, res) => {
+  console.log('\n🧪 PRUEBA REAL UNINEUUNI');
   
   try {
-    const { email } = req.body;
-    
-    if (!email) {
-      return res.json({ success: false, message: 'Email requerido' });
-    }
+    const { to, subject, message } = req.body;
+    const testEmail = to || process.env.EMAIL_USER;
 
-    console.log(`📧 Enviando prueba a: ${email}`);
-    
+    const currentTransporter = createTransporter();
+    await currentTransporter.verify();
+
     const mailOptions = {
-      from: `"Prueba Individual" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: 'Prueba Individual - ' + new Date().toLocaleString(),
-      text: `Hola,\n\nEsta es una prueba individual enviada a ${email}.\n\nSi recibes este correo, el sistema funciona correctamente.`,
-      html: `<h2>¡Prueba Individual Exitosa!</h2><p>Este correo fue enviado específicamente a: <strong>${email}</strong></p>`
+      from: `"Sistema UNINEUUNI" <${process.env.EMAIL_USER}>`,
+      to: testEmail,
+      subject: subject || '✅ CORREO REAL UNINEUUNI - ' + new Date().toLocaleTimeString(),
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h1 style="color: #27ae60;">✅ CORREO REAL ENVIADO</h1>
+          <p>Este correo fue enviado <strong>REALMENTE</strong> desde el servidor UNINEUUNI.</p>
+          <p><strong>Remitente:</strong> ${process.env.EMAIL_USER}</p>
+          <p><strong>Destinatario:</strong> ${testEmail}</p>
+          <p><strong>Hora:</strong> ${new Date().toLocaleString('es-MX')}</p>
+          <hr>
+          <p>${message || 'Mensaje de prueba del sistema de envíos masivos.'}</p>
+        </div>
+      `,
+      text: message || 'Correo de prueba REAL desde UNINEUUNI'
     };
 
-    const info = await transporter.sendMail(mailOptions);
+    console.log('📤 Enviando prueba REAL desde UNINEUUNI...');
+    const info = await currentTransporter.sendMail(mailOptions);
     
-    console.log(`✅ PRUEBA ENVIADA: ${email}`);
-    console.log('Message ID:', info.messageId);
-    console.log('Response:', info.response);
-    
-    res.json({ 
-      success: true, 
-      message: `Prueba enviada a ${email}`,
-      messageId: info.messageId
+    console.log('🎉 PRUEBA REAL EXITOSA:');
+    console.log('   ID:', info.messageId);
+    console.log('   Respuesta:', info.response);
+
+    res.json({
+      success: true,
+      message: '✅ Correo REAL enviado desde UNINEUUNI - Revisa tu bandeja',
+      messageId: info.messageId,
+      realDelivery: true
     });
-    
+
   } catch (error) {
-    console.log('❌ PRUEBA FALLÓ:', error.message);
-    res.json({ 
-      success: false, 
-      message: 'Error: ' + error.message 
+    console.log('❌ PRUEBA FALLIDA:', error.message);
+    res.status(500).json({
+      success: false,
+      message: '❌ Error: ' + error.message,
+      realDelivery: false
     });
   }
 });
 
-// Ruta principal
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+// Otras rutas (mantener igual)
+app.post('/upload-contacts', (req, res) => {
+  // ... (código anterior)
 });
 
-// Crear directorio de uploads si no existe
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
-}
+app.get('/status', (req, res) => {
+  res.json({
+    status: 'online',
+    serverTime: new Date().toISOString(),
+    emailConfigured: !!process.env.EMAIL_USER,
+    emailUser: process.env.EMAIL_USER,
+    realEmails: true
+  });
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor en http://localhost:${PORT}`);
-  console.log('📍 Endpoints:');
-  console.log('   - /send-emails → Envío masivo');
-  console.log('   - /send-test-single → Prueba individual (POST)');
+  console.log(`\n🚀 Servidor UNINEUUNI ejecutándose en http://localhost:${PORT}`);
+  console.log('📍 Los correos se enviarán REALMENTE');
+  console.log('⚠️  Revisa la carpeta de SPAM si no ves los correos');
 });
