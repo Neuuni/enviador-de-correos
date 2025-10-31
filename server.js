@@ -8,21 +8,26 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// ======================================================
+// 🔷 CONFIGURACIÓN GENERAL
+// ======================================================
+const INSTITUTION_NAME = "Universidad NEUUNI";
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// ✅ CONFIGURACIÓN CORRECTA PARA UNINEUUNI (Google Workspace)
+// ✅ CONFIGURACIÓN CORRECTA PARA UNIVERSIDAD NEUUNI (Google Workspace)
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: {
-      user: process.env.EMAIL_USER, // de.escobedo@unineuuni.edu.mx
-      pass: process.env.EMAIL_PASS  // CONTRASEÑA DE APLICACIÓN
+      user: process.env.EMAIL_USER, // Ejemplo: de.escobedo@neuuni.edu.mx
+      pass: process.env.EMAIL_PASS  // Contraseña de aplicación
     },
     tls: {
       rejectUnauthorized: false
@@ -30,23 +35,27 @@ const createTransporter = () => {
   });
 };
 
-// Verificación al iniciar
-console.log('\n=== SISTEMA UNINEUUNI - CORREOS REALES ===');
+// ======================================================
+// 🔍 VERIFICACIÓN INICIAL
+// ======================================================
+console.log(`\n=== SISTEMA ${INSTITUTION_NAME.toUpperCase()} - CORREOS REALES ===`);
 const transporter = createTransporter();
 transporter.verify((error, success) => {
   if (error) {
     console.log('❌ Error de configuración:', error.message);
   } else {
-    console.log('✅ CONFIGURACIÓN EXITOSA - CORREOS REALES ACTIVADOS');
+    console.log(`✅ CONFIGURACIÓN EXITOSA - ${INSTITUTION_NAME.toUpperCase()} ACTIVADO`);
     console.log('   📧 Remitente:', process.env.EMAIL_USER);
     console.log('   🌐 Servidor: smtp.gmail.com:587');
     console.log('   🚀 Los correos se enviarán REALMENTE\n');
   }
 });
 
-// ✅ RUTA PARA ENVÍO MASIVO REAL
+// ======================================================
+// 📦 RUTA PARA ENVÍO MASIVO REAL
+// ======================================================
 app.post('/send-bulk-emails', async (req, res) => {
-  console.log('\n📦 SOLICITUD DE ENVÍO MASIVO REAL');
+  console.log(`\n📦 SOLICITUD DE ENVÍO MASIVO REAL (${INSTITUTION_NAME})`);
   
   try {
     const { recipients, subject, message } = req.body;
@@ -72,7 +81,7 @@ app.post('/send-bulk-emails', async (req, res) => {
     // Verificar conexión primero
     try {
       await currentTransporter.verify();
-      console.log('✅ Servidor UNINEUUNI verificado - Enviando correos REALES');
+      console.log(`✅ Servidor ${INSTITUTION_NAME} verificado - Enviando correos REALES`);
     } catch (error) {
       console.log('❌ Error de conexión:', error.message);
       return res.status(500).json({
@@ -96,7 +105,7 @@ app.post('/send-bulk-emails', async (req, res) => {
         const personalizedMessage = message.replace(/\[NOMBRE\]/g, recipient.name);
 
         const mailOptions = {
-          from: `"Universidad UNINEUUNI" <${process.env.EMAIL_USER}>`,
+          from: `"${INSTITUTION_NAME}" <${process.env.EMAIL_USER}>`,
           to: recipient.email,
           subject: personalizedSubject,
           html: `
@@ -109,7 +118,7 @@ app.post('/send-bulk-emails', async (req, res) => {
                   ${personalizedMessage.replace(/\n/g, '<br>')}
                 </div>
                 <p style="color: #666; margin-top: 20px; text-align: center;">
-                  <small>Universidad UNINEUUNI</small><br>
+                  <small>${INSTITUTION_NAME}</small><br>
                   <small>${new Date().toLocaleString('es-MX')}</small>
                 </p>
               </div>
@@ -157,7 +166,7 @@ app.post('/send-bulk-emails', async (req, res) => {
 
     res.json({
       success: true,
-      message: `✅ ${results.successCount} correos enviados REALMENTE desde UNINEUUNI`,
+      message: `✅ ${results.successCount} correos enviados REALMENTE desde ${INSTITUTION_NAME}`,
       results: results,
       realDelivery: true
     });
@@ -171,9 +180,11 @@ app.post('/send-bulk-emails', async (req, res) => {
   }
 });
 
-// ✅ RUTA DE PRUEBA MEJORADA
+// ======================================================
+// 🧪 RUTA DE PRUEBA REAL
+// ======================================================
 app.post('/send-test-email', async (req, res) => {
-  console.log('\n🧪 PRUEBA REAL UNINEUUNI');
+  console.log(`\n🧪 PRUEBA REAL ${INSTITUTION_NAME}`);
   
   try {
     const { to, subject, message } = req.body;
@@ -183,24 +194,27 @@ app.post('/send-test-email', async (req, res) => {
     await currentTransporter.verify();
 
     const mailOptions = {
-      from: `"Sistema UNINEUUNI" <${process.env.EMAIL_USER}>`,
+      from: `"Sistema ${INSTITUTION_NAME}" <${process.env.EMAIL_USER}>`,
       to: testEmail,
-      subject: subject || '✅ CORREO REAL UNINEUUNI - ' + new Date().toLocaleTimeString(),
+      subject: subject || `✅ CORREO REAL ${INSTITUTION_NAME} - ${new Date().toLocaleTimeString()}`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
           <h1 style="color: #27ae60;">✅ CORREO REAL ENVIADO</h1>
-          <p>Este correo fue enviado <strong>REALMENTE</strong> desde el servidor UNINEUUNI.</p>
+          <p>Este correo fue enviado <strong>REALMENTE</strong> desde el servidor ${INSTITUTION_NAME}.</p>
           <p><strong>Remitente:</strong> ${process.env.EMAIL_USER}</p>
           <p><strong>Destinatario:</strong> ${testEmail}</p>
           <p><strong>Hora:</strong> ${new Date().toLocaleString('es-MX')}</p>
           <hr>
           <p>${message || 'Mensaje de prueba del sistema de envíos masivos.'}</p>
+          <p style="color:#888; text-align:center; margin-top:30px;">
+            <small>${INSTITUTION_NAME}</small>
+          </p>
         </div>
       `,
-      text: message || 'Correo de prueba REAL desde UNINEUUNI'
+      text: message || `Correo de prueba REAL desde ${INSTITUTION_NAME}`
     };
 
-    console.log('📤 Enviando prueba REAL desde UNINEUUNI...');
+    console.log(`📤 Enviando prueba REAL desde ${INSTITUTION_NAME}...`);
     const info = await currentTransporter.sendMail(mailOptions);
     
     console.log('🎉 PRUEBA REAL EXITOSA:');
@@ -209,7 +223,7 @@ app.post('/send-test-email', async (req, res) => {
 
     res.json({
       success: true,
-      message: '✅ Correo REAL enviado desde UNINEUUNI - Revisa tu bandeja',
+      message: `✅ Correo REAL enviado desde ${INSTITUTION_NAME} - Revisa tu bandeja`,
       messageId: info.messageId,
       realDelivery: true
     });
@@ -224,9 +238,11 @@ app.post('/send-test-email', async (req, res) => {
   }
 });
 
-// Otras rutas (mantener igual)
+// ======================================================
+// 📡 OTRAS RUTAS
+// ======================================================
 app.post('/upload-contacts', (req, res) => {
-  // ... (código anterior)
+  // ... (código anterior, si aplica)
 });
 
 app.get('/status', (req, res) => {
@@ -235,6 +251,7 @@ app.get('/status', (req, res) => {
     serverTime: new Date().toISOString(),
     emailConfigured: !!process.env.EMAIL_USER,
     emailUser: process.env.EMAIL_USER,
+    institution: INSTITUTION_NAME,
     realEmails: true
   });
 });
@@ -243,8 +260,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// ======================================================
+// 🚀 INICIO DEL SERVIDOR
+// ======================================================
 app.listen(PORT, () => {
-  console.log(`\n🚀 Servidor UNINEUUNI ejecutándose en http://localhost:${PORT}`);
+  console.log(`\n🚀 Servidor ${INSTITUTION_NAME} ejecutándose en http://localhost:${PORT}`);
   console.log('📍 Los correos se enviarán REALMENTE');
   console.log('⚠️  Revisa la carpeta de SPAM si no ves los correos');
 });

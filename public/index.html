@@ -434,7 +434,7 @@ Curso Introductorio de Plataforma: Consulten este curso para practicar y dominar
 
 Tutoriales y Guías: Si necesitan ayuda adicional con el manejo de las plataformas, pueden encontrar todos los tutoriales detallados en el siguiente sitio web:
 
-https://docs.unineuuni.com/
+https://docs.neuuni.com/
 
 ¡Gracias por unirte a nosotros!🤗</textarea>
                 </div>
@@ -493,7 +493,7 @@ Curso Introductorio de Plataforma: Consulten este curso para practicar y dominar
 
 Tutoriales y Guías: Si necesitan ayuda adicional con el manejo de las plataformas, pueden encontrar todos los tutoriales detallados en el siguiente sitio web:
 
-https://docs.unineuuni.com/
+https://docs.neuuni.com/
 
 ¡Gracias por unirte a nosotros!🤗
                     </div>
@@ -510,12 +510,14 @@ https://docs.unineuuni.com/
                 </div>
                 
                 <div class="actions">
+                    <!--
                     <button class="btn btn-secondary" id="preview-btn">
                         <i class="fas fa-eye"></i> Actualizar Vista
                     </button>
                     <button class="btn btn-info" id="test-btn-personalizado">
                         <i class="fas fa-vial"></i> Prueba Personalizada
                     </button>
+                    -->
                     <button class="btn btn-success" id="send-btn">
                         <i class="fas fa-paper-plane"></i> Enviar a Todos
                     </button>
@@ -540,7 +542,7 @@ https://docs.unineuuni.com/
             const previewSender = document.getElementById('preview-sender');
             const progressBar = document.getElementById('progress-bar');
             const statusInfo = document.getElementById('status-info');
-            const previewBtn = document.getElementById('preview-btn');
+            // const previewBtn = document.getElementById('preview-btn'); // COMENTADO
             const sendBtn = document.getElementById('send-btn');
             const notification = document.getElementById('notification');
             const notificationText = document.getElementById('notification-text');
@@ -549,7 +551,7 @@ https://docs.unineuuni.com/
             const fileUploadInput = document.getElementById('file-upload');
             const previewNameSelect = document.getElementById('preview-name-select');
             const previewRecipientEmail = document.getElementById('preview-recipient-email');
-            const testBtnPersonalizado = document.getElementById('test-btn-personalizado');
+            // const testBtnPersonalizado = document.getElementById('test-btn-personalizado'); // COMENTADO
             const fileProcessing = document.getElementById('file-processing');
             const sendingStatus = document.getElementById('sending-status');
 
@@ -613,8 +615,8 @@ https://docs.unineuuni.com/
                         </div>
                     `;
                     statusInfo.textContent = "No hay destinatarios cargados.";
-                    previewBtn.disabled = true;
-                    testBtnPersonalizado.disabled = true;
+                    // previewBtn.disabled = true; // COMENTADO
+                    // testBtnPersonalizado.disabled = true; // COMENTADO
                     sendBtn.disabled = true;
                     return;
                 }
@@ -644,8 +646,8 @@ https://docs.unineuuni.com/
                 statusInfo.textContent = `Destinatarios cargados: ${recipients.length}`;
                 
                 // Habilitar botones
-                previewBtn.disabled = false;
-                testBtnPersonalizado.disabled = false;
+                // previewBtn.disabled = false; // COMENTADO
+                // testBtnPersonalizado.disabled = false; // COMENTADO
                 sendBtn.disabled = false;
             }
 
@@ -852,13 +854,14 @@ https://docs.unineuuni.com/
             });
 
             // Eventos de Actualización de Vista Previa
-            previewBtn.addEventListener('click', updatePreview);
+            // previewBtn.addEventListener('click', updatePreview); // COMENTADO
             subjectInput.addEventListener('input', updatePreview);
             senderInput.addEventListener('input', updatePreview);
             messageInput.addEventListener('input', updatePreview);
             previewNameSelect.addEventListener('change', updatePreview);
 
-            // ✅ BOTÓN CORREGIDO - Enviar Prueba Personalizada REAL
+            // ✅ BOTÓN CORREGIDO - Enviar Prueba Personalizada REAL (COMENTADO)
+            /*
             testBtnPersonalizado.addEventListener('click', async function() {
                 const selectedEmail = previewNameSelect.value;
                 const recipient = allRecipients.find(r => r.email === selectedEmail);
@@ -912,6 +915,7 @@ https://docs.unineuuni.com/
                     }, 3000);
                 }
             });
+            */
 
             // Envío masivo
             sendBtn.addEventListener('click', async function() {
@@ -945,8 +949,8 @@ https://docs.unineuuni.com/
 
             // Inicialización
             statusInfo.textContent = "Carga un archivo para comenzar";
-            previewBtn.disabled = true;
-            testBtnPersonalizado.disabled = true;
+            // previewBtn.disabled = true; // COMENTADO
+            // testBtnPersonalizado.disabled = true; // COMENTADO
             sendBtn.disabled = true;
         });
     </script>
