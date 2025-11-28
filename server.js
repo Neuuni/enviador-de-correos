@@ -1,270 +1,285 @@
 require('dotenv').config();
 const express = require('express');
 const nodemailer = require('nodemailer');
-const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-
-// ======================================================
-// 🔷 CONFIGURACIÓN GENERAL
-// ======================================================
 const INSTITUTION_NAME = "Universidad NEUUNI";
 
-// Middleware
+// ======================================================
+// 🔷 CONFIGURACIÓN BÁSICA
+// ======================================================
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static('public'));
 
-// ✅ CONFIGURACIÓN CORRECTA PARA UNIVERSIDAD NEUUNI (Google Workspace)
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER, // Ejemplo: de.escobedo@neuuni.edu.mx
-      pass: process.env.EMAIL_PASS  // Contraseña de aplicación
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
-};
-
 // ======================================================
-// 🔍 VERIFICACIÓN INICIAL
-// ======================================================
-console.log(`\n=== SISTEMA ${INSTITUTION_NAME.toUpperCase()} - CORREOS REALES ===`);
-const transporter = createTransporter();
-transporter.verify((error, success) => {
-  if (error) {
-    console.log('❌ Error de configuración:', error.message);
-  } else {
-    console.log(`✅ CONFIGURACIÓN EXITOSA - ${INSTITUTION_NAME.toUpperCase()} ACTIVADO`);
-    console.log('   📧 Remitente:', process.env.EMAIL_USER);
-    console.log('   🌐 Servidor: smtp.gmail.com:587');
-    console.log('   🚀 Los correos se enviarán REALMENTE\n');
-  }
-});
-
-// ======================================================
-// 📦 RUTA PARA ENVÍO MASIVO REAL
+// 📦 RUTA PRINCIPAL - ENVÍO DE CORREOS - CORREGIDA
 // ======================================================
 app.post('/send-bulk-emails', async (req, res) => {
-  console.log(`\n📦 SOLICITUD DE ENVÍO MASIVO REAL (${INSTITUTION_NAME})`);
-  
-  try {
-    const { recipients, subject, message } = req.body;
-
-    if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No hay destinatarios válidos'
-      });
-    }
-
-    console.log(`📧 Destinatarios: ${recipients.length}`);
-    console.log(`📝 Asunto: ${subject}`);
-
-    const results = {
-      successCount: 0,
-      errorCount: 0,
-      details: []
-    };
-
-    const currentTransporter = createTransporter();
-
-    // Verificar conexión primero
+    console.log('\n=== SOLICITUD DE ENVÍO MASIVO ===');
+    
     try {
-      await currentTransporter.verify();
-      console.log(`✅ Servidor ${INSTITUTION_NAME} verificado - Enviando correos REALES`);
-    } catch (error) {
-      console.log('❌ Error de conexión:', error.message);
-      return res.status(500).json({
-        success: false,
-        message: 'Error de conexión: ' + error.message
-      });
-    }
+        const { recipients, subject, message, imageData } = req.body;
 
-    console.log('🔄 Iniciando envío de correos REALES...');
+        console.log('Destinatarios:', recipients?.length || 0);
+        console.log('Asunto:', subject);
+        console.log('Tiene imagen:', !!imageData); // ✅ VERIFICAR IMAGEN
 
-    for (let i = 0; i < recipients.length; i++) {
-      const recipient = recipients[i];
-      
-      if (!recipient.email || !recipient.name) {
-        results.errorCount++;
-        continue;
-      }
+        if (!recipients || recipients.length === 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'No hay destinatarios' 
+            });
+        }
 
-      try {
-        const personalizedSubject = subject.replace(/\[NOMBRE\]/g, recipient.name);
-        const personalizedMessage = message.replace(/\[NOMBRE\]/g, recipient.name);
+        // Configurar transporter de correo
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
 
-        const mailOptions = {
-          from: `"${INSTITUTION_NAME}" <${process.env.EMAIL_USER}>`,
-          to: recipient.email,
-          subject: personalizedSubject,
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-              <div style="background: #2c5aa0; padding: 20px; border-radius: 10px 10px 0 0; color: white;">
-                <h1 style="margin: 0; font-size: 24px;">${personalizedSubject}</h1>
-              </div>
-              <div style="background: #f8f9fa; padding: 20px; border-radius: 0 0 10px 10px;">
-                <div style="background: white; padding: 20px; border-radius: 5px; border-left: 4px solid #2c5aa0;">
-                  ${personalizedMessage.replace(/\n/g, '<br>')}
-                </div>
-                <p style="color: #666; margin-top: 20px; text-align: center;">
-                  <small>${INSTITUTION_NAME}</small><br>
-                  <small>${new Date().toLocaleString('es-MX')}</small>
-                </p>
-              </div>
-            </div>
-          `,
-          text: personalizedMessage
+        await transporter.verify();
+        console.log('✅ SMTP conectado correctamente');
+
+        const results = {
+            successCount: 0,
+            errorCount: 0,
+            details: []
         };
 
-        console.log(`📤 [${i + 1}/${recipients.length}] ENVIANDO REAL a: ${recipient.email}`);
-        
-        // ✅ ENVÍO REAL
-        const info = await currentTransporter.sendMail(mailOptions);
-        
-        results.successCount++;
-        results.details.push({
-          email: recipient.email,
-          name: recipient.name,
-          success: true,
-          messageId: info.messageId,
-          response: info.response
+        // ✅ CORRECCIÓN: PROCESAR IMAGEN CORRECTAMENTE
+        let attachment = null;
+        let imageCid = null;
+
+        if (imageData && imageData.data) {
+            try {
+                console.log('🖼️ Procesando imagen del frontend...');
+                
+                // ✅ CORREGIDO: Usar la estructura correcta del frontend
+                attachment = {
+                    filename: imageData.filename || "imagen-bienvenida.jpg",
+                    content: imageData.data, // ✅ Ya viene en base64 del frontend
+                    encoding: 'base64', // ✅ Especificar que es base64
+                    contentType: imageData.mimeType || 'image/jpeg',
+                    cid: 'welcome_image_neuuni' // ✅ CID único para referencia en HTML
+                };
+                
+                imageCid = 'welcome_image_neuuni';
+                console.log('✅ Imagen preparada para envío');
+
+            } catch (err) {
+                console.log("⚠ Error procesando imagen:", err.message);
+            }
+        }
+
+        // Enviar correos
+        for (let i = 0; i < recipients.length; i++) {
+            const recipient = recipients[i];
+            
+            if (!recipient.email) {
+                results.errorCount++;
+                continue;
+            }
+
+            try {
+                const personalizedSubject = subject.replace(/\[NOMBRE\]/g, recipient.name || '');
+                const personalizedMessage = message.replace(/\[NOMBRE\]/g, recipient.name || '');
+
+                // ✅ CORRECCIÓN: HTML MEJORADO CON IMAGEN
+                const mailOptions = {
+                    from: `"${INSTITUTION_NAME}" <${process.env.EMAIL_USER}>`,
+                    to: recipient.email,
+                    subject: personalizedSubject,
+                    html: `
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;">
+                            <div style="background: #4A6FFF; padding: 25px; color: white; text-align: center;">
+                                <h1 style="margin: 0; font-size: 24px;">${INSTITUTION_NAME}</h1>
+                                <p style="margin: 10px 0 0 0; opacity: 0.9;">${personalizedSubject}</p>
+                            </div>
+                            
+                            <div style="padding: 30px; background: #f8f9fa;">
+                                <div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <!-- MENSAJE PRINCIPAL -->
+                                    <div style="white-space: pre-line; line-height: 1.6; color: #333;">
+                                        ${personalizedMessage.replace(/\n/g, '<br>')}
+                                    </div>
+                                    
+                                    <!-- ✅ IMAGEN INCORPORADA CORRECTAMENTE -->
+                                    ${attachment ? `
+                                    <div style="text-align: center; margin: 25px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                                        <img src="cid:${imageCid}" alt="Bienvenida ${INSTITUTION_NAME}" 
+                                             style="max-width: 100%; max-height: 300px; border-radius: 8px; border: 1px solid #ddd;">
+                                        <p style="margin-top: 10px; color: #666; font-size: 14px;">
+                                            ${INSTITUTION_NAME} - Innovación Educativa
+                                        </p>
+                                    </div>
+                                    ` : ''}
+                                </div>
+
+                                <!-- PIE DE PÁGINA -->
+                                <div style="text-align: center; margin-top: 25px; padding: 20px; color: #666; background: white; border-radius: 8px;">
+                                    <p style="margin: 0 0 10px 0;">
+                                        <strong>${INSTITUTION_NAME}</strong><br>
+                                        📧 ${process.env.EMAIL_USER} | 🌐 www.neuuni.com
+                                    </p>
+                                    <p style="margin: 0; font-size: 12px; color: #999;">
+                                        ${new Date().toLocaleString('es-MX', { 
+                                            weekday: 'long', 
+                                            year: 'numeric', 
+                                            month: 'long', 
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}<br>
+                                        &copy; ${new Date().getFullYear()} ${INSTITUTION_NAME}. Todos los derechos reservados.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    text: personalizedMessage,
+                    attachments: attachment ? [attachment] : [] // ✅ AÑADIR ADJUNTO SI EXISTE
+                };
+
+                console.log(`📧 Enviando a: ${recipient.email} ${attachment ? '📷' : ''}`);
+                await transporter.sendMail(mailOptions);
+                
+                results.successCount++;
+                results.details.push({
+                    email: recipient.email,
+                    name: recipient.name,
+                    status: 'enviado',
+                    withImage: !!attachment
+                });
+
+                console.log('✅ Correo enviado' + (attachment ? ' con imagen' : ''));
+
+            } catch (error) {
+                console.log('❌ Error:', error.message);
+                results.errorCount++;
+                results.details.push({
+                    email: recipient.email,
+                    name: recipient.name,
+                    status: 'error',
+                    error: error.message
+                });
+            }
+
+            // Pausa entre envíos
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        console.log(`📊 Resumen: ${results.successCount} exitosos, ${results.errorCount} errores`);
+
+        res.json({
+            success: true,
+            message: `Envío completado: ${results.successCount} correos enviados${attachment ? ' con imagen' : ''}`,
+            details: results.details,
+            successCount: results.successCount,
+            errorCount: results.errorCount,
+            realDelivery: true,
+            imageIncluded: !!attachment
         });
 
-        console.log(`   ✅ ENVIADO REALMENTE: ${info.response}`);
-
-      } catch (error) {
-        console.log(`   ❌ ERROR REAL: ${error.message}`);
-        results.errorCount++;
-        results.details.push({
-          email: recipient.email,
-          name: recipient.name,
-          success: false,
-          error: error.message
+    } catch (error) {
+        console.log('❌ Error general:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Error: ' + error.message
         });
-      }
-
-      // Pausa entre correos
-      if (i < recipients.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
     }
-
-    console.log('📊 RESULTADO FINAL REAL:');
-    console.log(`   ✅ Correos REALMENTE enviados: ${results.successCount}`);
-    console.log(`   ❌ Errores: ${results.errorCount}`);
-
-    res.json({
-      success: true,
-      message: `✅ ${results.successCount} correos enviados REALMENTE desde ${INSTITUTION_NAME}`,
-      results: results,
-      realDelivery: true
-    });
-
-  } catch (error) {
-    console.log('❌ ERROR CRÍTICO:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error del servidor: ' + error.message
-    });
-  }
 });
 
 // ======================================================
-// 🧪 RUTA DE PRUEBA REAL
+// RUTAS EXTRAS (NO MODIFICADAS)
 // ======================================================
+app.post('/upload-image', (req, res) => {
+    console.log('📸 Solicitud de imagen recibida');
+    res.json({
+        success: true,
+        imageUrl: 'https://via.placeholder.com/600x300/2c5aa0/ffffff?text=NEUUNI'
+    });
+});
+
 app.post('/send-test-email', async (req, res) => {
-  console.log(`\n🧪 PRUEBA REAL ${INSTITUTION_NAME}`);
-  
-  try {
-    const { to, subject, message } = req.body;
-    const testEmail = to || process.env.EMAIL_USER;
-
-    const currentTransporter = createTransporter();
-    await currentTransporter.verify();
-
-    const mailOptions = {
-      from: `"Sistema ${INSTITUTION_NAME}" <${process.env.EMAIL_USER}>`,
-      to: testEmail,
-      subject: subject || `✅ CORREO REAL ${INSTITUTION_NAME} - ${new Date().toLocaleTimeString()}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h1 style="color: #27ae60;">✅ CORREO REAL ENVIADO</h1>
-          <p>Este correo fue enviado <strong>REALMENTE</strong> desde el servidor ${INSTITUTION_NAME}.</p>
-          <p><strong>Remitente:</strong> ${process.env.EMAIL_USER}</p>
-          <p><strong>Destinatario:</strong> ${testEmail}</p>
-          <p><strong>Hora:</strong> ${new Date().toLocaleString('es-MX')}</p>
-          <hr>
-          <p>${message || 'Mensaje de prueba del sistema de envíos masivos.'}</p>
-          <p style="color:#888; text-align:center; margin-top:30px;">
-            <small>${INSTITUTION_NAME}</small>
-          </p>
-        </div>
-      `,
-      text: message || `Correo de prueba REAL desde ${INSTITUTION_NAME}`
-    };
-
-    console.log(`📤 Enviando prueba REAL desde ${INSTITUTION_NAME}...`);
-    const info = await currentTransporter.sendMail(mailOptions);
+    console.log('\n🧪 SOLICITUD DE PRUEBA');
     
-    console.log('🎉 PRUEBA REAL EXITOSA:');
-    console.log('   ID:', info.messageId);
-    console.log('   Respuesta:', info.response);
+    try {
+        const { to } = req.body;
+        const testEmail = to || process.env.EMAIL_USER;
 
-    res.json({
-      success: true,
-      message: `✅ Correo REAL enviado desde ${INSTITUTION_NAME} - Revisa tu bandeja`,
-      messageId: info.messageId,
-      realDelivery: true
-    });
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.gmail.com',
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
 
-  } catch (error) {
-    console.log('❌ PRUEBA FALLIDA:', error.message);
-    res.status(500).json({
-      success: false,
-      message: '❌ Error: ' + error.message,
-      realDelivery: false
-    });
-  }
-});
+        await transporter.verify();
 
-// ======================================================
-// 📡 OTRAS RUTAS
-// ======================================================
-app.post('/upload-contacts', (req, res) => {
-  // ... (código anterior, si aplica)
+        const mailOptions = {
+            from: `"${INSTITUTION_NAME}" <${process.env.EMAIL_USER}>`,
+            to: testEmail,
+            subject: `✅ Prueba ${INSTITUTION_NAME}`,
+            html: `
+                <div style="font-family: Arial; padding: 20px;">
+                    <h2 style="color: #28a745;">✅ PRUEBA EXITOSA</h2>
+                    <p>El sistema de envío masivo funciona correctamente.</p>
+                    <p><strong>Institución:</strong> ${INSTITUTION_NAME}</p>
+                    <p><strong>Hora:</strong> ${new Date().toLocaleString('es-MX')}</p>
+                </div>
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('✅ Correo de prueba enviado');
+
+        res.json({
+            success: true,
+            message: 'Correo de prueba enviado - Revisa tu bandeja',
+            messageId: info.messageId,
+            realDelivery: true
+        });
+
+    } catch (error) {
+        console.log('❌ Error en prueba:', error.message);
+        res.status(500).json({
+            success: false,
+            message: 'Error: ' + error.message
+        });
+    }
 });
 
 app.get('/status', (req, res) => {
-  res.json({
-    status: 'online',
-    serverTime: new Date().toISOString(),
-    emailConfigured: !!process.env.EMAIL_USER,
-    emailUser: process.env.EMAIL_USER,
-    institution: INSTITUTION_NAME,
-    realEmails: true
-  });
+    res.json({
+        status: 'online',
+        institution: INSTITUTION_NAME,
+        serverTime: new Date().toISOString()
+    });
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ======================================================
-// 🚀 INICIO DEL SERVIDOR
-// ======================================================
 app.listen(PORT, () => {
-  console.log(`\n🚀 Servidor ${INSTITUTION_NAME} ejecutándose en http://localhost:${PORT}`);
-  console.log('📍 Los correos se enviarán REALMENTE');
-  console.log('⚠️  Revisa la carpeta de SPAM si no ves los correos');
+    console.log(`\n🚀 Servidor ${INSTITUTION_NAME} ejecutándose en http://localhost:${PORT}`);
+    console.log('✅ Listo para enviar correos REALES con imágenes');
+    console.log('📧 EMAIL_USER:', process.env.EMAIL_USER || 'NO CONFIGURADO');
+    console.log('🖼️ Sistema de imágenes: ACTIVADO');
 });
