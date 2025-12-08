@@ -283,3 +283,5 @@ app.listen(PORT, () => {
     console.log('📧 EMAIL_USER:', process.env.EMAIL_USER || 'NO CONFIGURADO');
     console.log('🖼️ Sistema de imágenes: ACTIVADO');
 });
+
+
