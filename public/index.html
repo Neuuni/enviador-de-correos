@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Envío Masivo de Correos de Bienvenida</title>
+    <title>Envío Masivo de Correos de Bienvenida Personalizados</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -12,7 +12,7 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
@@ -21,7 +21,6 @@
             align-items: center;
             padding: 20px;
         }
-        
         .container {
             background: white;
             border-radius: 12px;
@@ -102,6 +101,7 @@
             border-radius: 6px;
             padding: 10px;
             background: white;
+            font-size: 14px;
         }
         
         .recipient-item {
@@ -115,9 +115,32 @@
             border-bottom: none;
         }
         
-        .recipient-item input {
+        .recipient-item input[type="checkbox"] {
             width: auto;
             margin-right: 10px;
+        }
+        
+        .recipient-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .recipient-name {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .recipient-email {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .recipient-fullname {
+            font-size: 0.8rem;
+            color: #888;
+            font-style: italic;
+            margin-top: 2px;
         }
         
         .email-preview {
@@ -149,6 +172,7 @@
         .email-body {
             line-height: 1.6;
             color: #212529;
+            white-space: pre-wrap;
         }
         
         .actions {
@@ -159,16 +183,17 @@
         }
         
         .btn {
-            padding: 12px 25px;
+            padding: 12px 20px;
             border: none;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             transition: all 0.3s;
+            flex: 1;
         }
         
         .btn-primary {
@@ -196,6 +221,15 @@
         
         .btn-success:hover {
             background: #218838;
+        }
+
+        .btn-info { 
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
         }
         
         .progress-container {
@@ -229,17 +263,22 @@
             color: white;
             border-radius: 6px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateX(100%);
+            transform: translateX(150%);
             opacity: 0;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 10px;
+            z-index: 1000;
         }
         
         .notification.show {
             transform: translateX(0);
             opacity: 1;
+        }
+        
+        .notification.error {
+            background: #dc3545;
         }
         
         .template-selector {
@@ -256,21 +295,183 @@
             background: white;
             cursor: pointer;
             text-align: center;
+            transition: all 0.3s;
         }
         
         .template-btn.active {
             border-color: #4A6FFF;
             background: #f0f4ff;
+            color: #4A6FFF;
+        }
+        
+        .btn-file-upload {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 6px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: none;
+            font-size: 14px;
+        }
+
+        .btn-file-upload:hover {
+            background-color: #0056b3;
+        }
+        
+        #file-upload {
+            display: none;
+        }
+
+        .file-processing {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            border: 1px solid #b3d9ff;
+            display: none;
+        }
+        
+        .file-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+        
+        .no-recipients {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+        }
+        
+        .sending-status {
+            margin-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            background: white;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .sending-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sending-item:last-child {
+            border-bottom: none;
+        }
+        
+        .sending-status-icon {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        
+        .sending-success {
+            color: #28a745;
+        }
+        
+        .sending-error {
+            color: #dc3545;
+        }
+        
+        .sending-pending {
+            color: #ffc107;
+        }
+
+        /* ✅ ESTILOS PARA LA SECCIÓN DE IMAGEN */
+        .image-upload-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .image-preview-container {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .image-preview-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .image-preview-img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .image-info {
+            flex-grow: 1;
+        }
+
+        .image-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .image-size {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .image-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .image-progress {
+            height: 100%;
+            background: linear-gradient(135deg, #4A6FFF 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .image-upload-status {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .image-upload-status.success {
+            color: #28a745;
+        }
+
+        .image-upload-status.error {
+            color: #dc3545;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Envío Masivo de Correos de Bienvenida</h1>
-            <p>Gestiona y envía correos de bienvenida a nuevos usuarios</p>
+            <h1>Envío Masivo de Correos de Bienvenida Personalizados - NEUUNI</h1>
+            <p>Gestiona y envía correos de bienvenida a nuevos usuarios. Usa <strong>[NOMBRE]</strong> para personalizar.</p>
         </header>
-        
+    
         <div class="content">
             <div class="form-section">
                 <h2>Configuración del Correo</h2>
@@ -286,58 +487,91 @@
                     </div>
                     <div class="template-btn" data-template="promotional">
                         <i class="fas fa-percentage"></i>
-                        <span>Promocionsl</span>
+                        <span>Promocional</span>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label for="subject">Asunto del Correo</label>
-                    <input type="text" id="subject" placeholder="Ej: ¡Bienvenido a Nuestra Plataforma!" value="¡Bienvenido a Nuestra Plataforma!">
+                    <input type="text" id="subject" placeholder="Ej: ¡Bienvenido a Nuestra Plataforma!" value="¡Hola [NOMBRE], bienvenido a Universidad NEUUNI!">
                 </div>
                 
                 <div class="form-group">
                     <label for="sender">Remitente</label>
-                    <input type="text" id="sender" placeholder="Ej: Equipo de Soporte" value="Equipo de Bienvenida">
+                    <input type="text" id="sender" placeholder="Ej: Equipo de Soporte" value="Universidad NEUUNI">
                 </div>
                 
                 <div class="form-group">
-                    <label for="message">Mensaje de Bienvenida</label>
-                    <textarea id="message" placeholder="Escribe tu mensaje de bienvenida aquí...">Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
+                    <label for="message">Mensaje de Bienvenida (Usa <strong>[NOMBRE]</strong> para personalizar)</label>
+                    <textarea id="message" placeholder="Escribe tu mensaje de bienvenida aquí...">Hola [NOMBRE],
 
-Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
+Para comenzar con éxito, es crucial que se familiaricen con nuestras herramientas digitales:
 
-¡Gracias por unirte a nosotros!</textarea>
+Curso Introductorio de Plataforma: Consulten este curso para practicar y dominar el uso de la plataforma educativa antes de que inicien sus clases.
+
+Tutoriales y Guías: Si necesitan ayuda adicional con el manejo de las plataformas, pueden encontrar todos los tutoriales detallados en el siguiente sitio web:
+
+https://docs.neuuni.com/
+
+¡Gracias por unirte a nosotros!🤗</textarea>
+                </div>
+
+                <!-- ✅ SECCIÓN MEJORADA PARA IMAGEN -->
+                <div class="form-group">
+                    <label>Imagen para el correo (Opcional)</label>
+                    <div class="image-upload-section">
+                        <button type="button" class="btn btn-secondary" id="btn-select-image" style="width: 100%; margin-bottom: 10px;">
+                            <i class="fas fa-image"></i> Seleccionar Imagen
+                        </button>
+                        <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                        
+                        <div id="image-preview-container" class="image-preview-container">
+                            <div class="image-preview-content">
+                                <img id="image-preview" src="" alt="Vista previa" class="image-preview-img">
+                                <div class="image-info">
+                                    <div id="image-name" class="image-name"></div>
+                                    <div id="image-size" class="image-size"></div>
+                                </div>
+                                <button type="button" id="btn-remove-image" class="btn btn-secondary" style="padding: 5px 10px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="image-progress-bar" id="image-progress-bar">
+                                <div class="image-progress" id="image-progress"></div>
+                            </div>
+                            <div class="image-upload-status" id="image-upload-status"></div>
+                        </div>
+                        
+                        <div class="file-info">
+                            <strong>Formatos soportados:</strong> JPG, PNG, GIF, WEBP (Máx. 10MB)
+                        </div>
+                    </div>
                 </div>
                 
                 <h2>Destinatarios</h2>
                 
                 <div class="form-group">
-                    <label for="recipients">Lista de Correos Electrónicos</label>
-                    <textarea id="recipients" placeholder="Ingresa las direcciones de correo, separadas por comas o por líneas">ejemplo1@correo.com, ejemplo2@correo.com
-ejemplo3@correo.com
-ejemplo4@correo.com, ejemplo5@correo.com</textarea>
+                    <label for="file-upload" class="btn btn-secondary btn-file-upload">
+                        <i class="fas fa-file-upload"></i> Cargar Archivo (TXT/CSV)
+                    </label>
+                    <input type="file" id="file-upload" accept=".txt,.csv">
+                    <div class="file-info">
+                        <strong>Formatos soportados:</strong><br>
+                        • CSV: Nombre,Correo<br>
+                        • TXT con pipes: | Nombre | Correo |
+                    </div>
                 </div>
-                
-                <div class="recipients-list">
-                    <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo1@correo.com</span>
-                    </div>
-                    <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo2@correo.com</span>
-                    </div>
-                    <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo3@correo.com</span>
-                    </div>
-                    <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo4@correo.com</span>
-                    </div>
-                    <div class="recipient-item">
-                        <input type="checkbox" checked>
-                        <span>ejemplo5@correo.com</span>
+
+                <div id="file-processing" class="file-processing">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Procesando archivo...</span>
+                </div>
+
+                <div class="recipients-list" id="recipients-list-container">
+                    <div class="no-recipients">
+                        <i class="fas fa-users" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <div>No hay destinatarios cargados</div>
+                        <div style="font-size: 0.8rem; margin-top: 5px;">Carga un archivo para ver los destinatarios aquí</div>
                     </div>
                 </div>
             </div>
@@ -345,21 +579,37 @@ ejemplo4@correo.com, ejemplo5@correo.com</textarea>
             <div class="preview-section">
                 <h2>Vista Previa del Correo</h2>
                 
+                <div class="form-group">
+                    <label for="preview-name-select">Personalizar Vista Previa para:</label>
+                    <select id="preview-name-select">
+                        <option value="">Selecciona un destinatario</option>
+                    </select>
+                </div>
+
                 <div class="email-preview">
                     <div class="email-header">
-                        <div class="email-subject" id="preview-subject">¡Bienvenido a Nuestra Plataforma!</div>
+                        <div class="email-subject" id="preview-subject">¡Hola [NOMBRE], bienvenido a Universidad NEUUNI!</div>
                         <div class="email-meta">
-                            <strong>De:</strong> Equipo de Bienvenida<br>
-                            <strong>Para:</strong> [Destinatario]
+                            <strong>De:</strong> <span id="preview-sender">Universidad NEUUNI</span><br>
+                            <strong>Para:</strong> <span id="preview-recipient-email">[Destinatario]</span>
                         </div>
                     </div>
                     
                     <div class="email-body" id="preview-message">
-                        Nos complace darte la bienvenida a nuestra plataforma. Estamos encantados de tenerte con nosotros y esperamos que tengas una experiencia excelente.
+Para comenzar con éxito, es crucial que se familiaricen con nuestras herramientas digitales:
 
-Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
+Curso Introductorio de Plataforma: Consulten este curso para practicar y dominar el uso de la plataforma educativa antes de que inicien sus clases.
 
-¡Gracias por unirte a nosotros!
+Tutoriales y Guías: Si necesitan ayuda adicional con el manejo de las plataformas, pueden encontrar todos los tutoriales detallados en el siguiente sitio web:
+
+https://docs.neuuni.com/
+
+¡Gracias por unirte a nosotros!🤗
+                    </div>
+
+                    <!-- ✅ IMAGEN EN VISTA PREVIA -->
+                    <div id="preview-image-container" style="display: none; margin-top: 20px; text-align: center;">
+                        <img id="preview-image" src="" alt="Imagen adjunta" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
                     </div>
                 </div>
                 
@@ -367,17 +617,15 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                     <div class="progress-bar" id="progress-bar"></div>
                 </div>
                 
-                <div class="status-info" id="status-info">Listo para enviar</div>
+                <div class="status-info" id="status-info">Listo para enviar correos REALES</div>
+                
+                <div class="sending-status" id="sending-status">
+                    <!-- Aquí se mostrará el estado de envío de cada correo -->
+                </div>
                 
                 <div class="actions">
-                    <button class="btn btn-secondary" id="test-btn">
-                        <i class="fas fa-vial"></i> Enviar Prueba
-                    </button>
-                    <button class="btn btn-primary" id="preview-btn">
-                        <i class="fas fa-eye"></i> Actualizar Vista
-                    </button>
                     <button class="btn btn-success" id="send-btn">
-                        <i class="fas fa-paper-plane"></i> Enviar a Todos
+                        <i class="fas fa-paper-plane"></i> Enviar Correos REALES
                     </button>
                 </div>
             </div>
@@ -395,44 +643,386 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
             const subjectInput = document.getElementById('subject');
             const senderInput = document.getElementById('sender');
             const messageInput = document.getElementById('message');
-            const recipientsInput = document.getElementById('recipients');
             const previewSubject = document.getElementById('preview-subject');
             const previewMessage = document.getElementById('preview-message');
+            const previewSender = document.getElementById('preview-sender');
             const progressBar = document.getElementById('progress-bar');
             const statusInfo = document.getElementById('status-info');
-            const testBtn = document.getElementById('test-btn');
-            const previewBtn = document.getElementById('preview-btn');
             const sendBtn = document.getElementById('send-btn');
             const notification = document.getElementById('notification');
             const notificationText = document.getElementById('notification-text');
             const templateButtons = document.querySelectorAll('.template-btn');
-            
-            // Actualizar vista previa
-            function updatePreview() {
-                previewSubject.textContent = subjectInput.value;
-                previewMessage.innerHTML = messageInput.value.replace(/\n/g, '<br>');
-            }
-            
+            const recipientsList = document.getElementById('recipients-list-container');
+            const fileUploadInput = document.getElementById('file-upload');
+            const previewNameSelect = document.getElementById('preview-name-select');
+            const previewRecipientEmail = document.getElementById('preview-recipient-email');
+            const fileProcessing = document.getElementById('file-processing');
+            const sendingStatus = document.getElementById('sending-status');
+            const previewImageContainer = document.getElementById('preview-image-container');
+            const previewImage = document.getElementById('preview-image');
+
+            // ✅ VARIABLES PARA IMAGEN
+            const imageUploadInput = document.getElementById('image-upload');
+            const btnSelectImage = document.getElementById('btn-select-image');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const imagePreview = document.getElementById('image-preview');
+            const imageName = document.getElementById('image-name');
+            const imageSize = document.getElementById('image-size');
+            const btnRemoveImage = document.getElementById('btn-remove-image');
+            const imageProgressBar = document.getElementById('image-progress-bar');
+            const imageProgress = document.getElementById('image-progress');
+            const imageUploadStatus = document.getElementById('image-upload-status');
+
+            let allRecipients = [];
+            let currentImageData = null; // ✅ CAMBIADO: Ahora guardamos datos completos de la imagen
+
             // Plantillas de correo
             const templates = {
                 formal: {
-                    subject: "Bienvenido a Nuestra Plataforma",
+                    subject: "Bienvenido a Universidad NEUUNI, [NOMBRE]",
                     sender: "Departamento de Atención al Cliente",
-                    message: "Estimado usuario,\n\nNos complace darle la bienvenida a nuestra plataforma. Agradecemos su confianza en nuestros servicios.\n\nQuedamos a su disposición para cualquier consulta o inquietud que pueda tener.\n\nAtentamente,\nEl Equipo de Soporte"
+                    message: "Estimado/a [NOMBRE],\n\n¡Les damos la bienvenida a la institución! Para comenzar con éxito, es crucial que se familiaricen con nuestras herramientas digitales: Curso Introductorio de Plataforma: Consulten este curso para practicar y dominar el uso de la plataforma educativa antes de que inicien sus clases.Tutoriales y Guías: Si necesitan ayuda adicional con el manejo de las plataformas, pueden encontrar todos los tutoriales detallados en el siguiente sitio web:!"
                 },
                 informal: {
-                    subject: "¡Te damos la bienvenida!",
+                    subject: "¡Te damos la bienvenida, [NOMBRE]!",
                     sender: "El equipo de comunidad",
-                    message: "¡Hola!\n\n¡Estamos encantados de tenerte con nosotros! Esperamos que te sientas como en casa y disfrutes de todos nuestros servicios.\n\nSi necesitas ayuda o tienes alguna pregunta, no dudes en contactarnos. Estamos aquí para ayudarte.\n\n¡Un saludo!"
+                    message: "¡Hola [NOMBRE]!\n\n¡Estamos encantados de tenerte con nosotros! Esperamos que te sientas como en casa y disfrutes de todos nuestros servicios.\n\nSi necesitas ayuda o tienes alguna pregunta, no dudes en contactarnos. Estamos aquí para ayudarte.\n\n¡Un saludo!"
                 },
                 promotional: {
-                    subject: "¡Bienvenido! Tu descuento especial te espera",
+                    subject: "¡[NOMBRE], tu descuento especial te espera!",
                     sender: "Ofertas Especiales",
-                    message: "¡Bienvenido a bordo!\n\nPara celebrar tu llegada, queremos ofrecerte un 20% de descuento en tu primera compra. Usa el código: BIENVENIDO20\n\nAdemás, tendrás acceso prioritario a nuestras promociones exclusivas.\n\n¡No esperes más para disfrutar de tus beneficios!\n\nEl equipo de Promociones"
+                    message: "¡Bienvenido a bordo, [NOMBRE]!\n\nPara celebrar tu llegada, queremos ofrecerte un 20% de descuento en tu primera compra. Usa el código: BIENVENIDO20\n\nAdemás, tendrás acceso prioritario a nuestras promociones exclusivas.\n\n¡No esperes más para disfrutar de tus beneficios!\n\nEl equipo de Promociones"
                 }
             };
+
+            // --- FUNCIONES CENTRALES ---
+
+            function updatePreview() {
+                const selectedEmail = previewNameSelect.value;
+                let recipientName = '[NOMBRE]';
+                let recipientEmail = '[Destinatario]';
+
+                if (selectedEmail) {
+                    const recipient = allRecipients.find(r => r.email === selectedEmail);
+                    if (recipient) {
+                        recipientName = recipient.name;
+                        recipientEmail = recipient.email;
+                    }
+                }
+
+                const personalizedSubject = subjectInput.value.replace(/\[NOMBRE\]/g, recipientName);
+                const personalizedMessage = messageInput.value.replace(/\[NOMBRE\]/g, recipientName);
+
+                previewSubject.textContent = personalizedSubject;
+                previewSender.textContent = senderInput.value;
+                previewMessage.innerHTML = personalizedMessage.replace(/\n/g, '<br>');
+                previewRecipientEmail.textContent = recipientEmail;
+
+                // ✅ ACTUALIZAR IMAGEN EN VISTA PREVIA
+                if (currentImageData && currentImageData.dataUrl) {
+                    previewImage.src = currentImageData.dataUrl;
+                    previewImageContainer.style.display = 'block';
+                } else {
+                    previewImageContainer.style.display = 'none';
+                }
+            }
+
+            function updateRecipientsDisplay(recipients) {
+                allRecipients = recipients; 
+                recipientsList.innerHTML = '';
+                previewNameSelect.innerHTML = '<option value="">Selecciona un destinatario</option>'; 
+
+                if (recipients.length === 0) {
+                    recipientsList.innerHTML = `
+                        <div class="no-recipients">
+                            <i class="fas fa-users" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i>
+                            <div>No hay destinatarios cargados</div>
+                            <div style="font-size: 0.8rem; margin-top: 5px;">Carga un archivo para ver los destinatarios aquí</div>
+                        </div>
+                    `;
+                    statusInfo.textContent = "No hay destinatarios cargados.";
+                    sendBtn.disabled = true;
+                    return;
+                }
+
+                recipients.forEach(recipient => {
+                    const item = document.createElement('div');
+                    item.className = 'recipient-item';
+                    item.innerHTML = `
+                        <input type="checkbox" checked data-name="${recipient.name}" data-email="${recipient.email}">
+                        <div class="recipient-info">
+                            <span class="recipient-name">${recipient.name}</span>
+                            <span class="recipient-email">${recipient.email}</span>
+                            ${recipient.fullName ? `<span class="recipient-fullname">${recipient.fullName}</span>` : ''}
+                        </div>
+                    `;
+                    recipientsList.appendChild(item);
+
+                    const option = document.createElement('option');
+                    option.value = recipient.email;
+                    option.textContent = `${recipient.name} (${recipient.email})`;
+                    previewNameSelect.appendChild(option);
+                });
+                
+                updatePreview();
+                statusInfo.textContent = `Destinatarios cargados: ${recipients.length}`;
+                sendBtn.disabled = false;
+            }
+
+            function showNotification(message, isSuccess = true) {
+                notificationText.textContent = message;
+                if (isSuccess) {
+                    notification.style.backgroundColor = '#28a745';
+                    notification.classList.remove('error');
+                } else {
+                    notification.style.backgroundColor = '#dc3545';
+                    notification.classList.add('error');
+                }
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 4000);
+            }
+
+            // ✅ FUNCIONES PARA MANEJO DE IMAGEN
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            function showImagePreview(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imageName.textContent = file.name;
+                    imageSize.textContent = formatFileSize(file.size);
+                    imagePreviewContainer.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+
+            function removeImage() {
+                imageUploadInput.value = '';
+                imagePreviewContainer.style.display = 'none';
+                currentImageData = null;
+                imagePreview.src = '';
+                imageProgressBar.style.display = 'none';
+                imageUploadStatus.style.display = 'none';
+                updatePreview();
+            }
+
+            // ✅ FUNCIÓN CORREGIDA - PROCESAR IMAGEN COMPLETA
+            async function processImage(file) {
+                return new Promise((resolve, reject) => {
+                    try {
+                        // Mostrar progreso
+                        imageProgressBar.style.display = 'block';
+                        imageProgress.style.width = '30%';
+                        imageUploadStatus.style.display = 'block';
+                        imageUploadStatus.textContent = 'Procesando imagen...';
+                        imageUploadStatus.className = 'image-upload-status';
+
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            imageProgress.style.width = '100%';
+                            imageUploadStatus.textContent = '✅ Imagen lista para usar';
+                            imageUploadStatus.className = 'image-upload-status success';
+                            
+                            const dataUrl = e.target.result;
+                            console.log('✅ Imagen procesada correctamente');
+                            
+                            // ✅ GUARDAR DATOS COMPLETOS DE LA IMAGEN
+                            resolve({
+                                dataUrl: dataUrl,
+                                filename: file.name,
+                                mimeType: file.type,
+                                base64Data: dataUrl.split(',')[1] // Solo la parte base64
+                            });
+                        };
+                        
+                        reader.onerror = function() {
+                            imageUploadStatus.textContent = '❌ Error procesando imagen';
+                            imageUploadStatus.className = 'image-upload-status error';
+                            reject(new Error('Error leyendo el archivo'));
+                        };
+                        
+                        reader.readAsDataURL(file);
+                        
+                    } catch (error) {
+                        imageUploadStatus.textContent = '❌ Error: ' + error.message;
+                        imageUploadStatus.className = 'image-upload-status error';
+                        reject(error);
+                    }
+                });
+            }
+
+            // Función para parsear el contenido del archivo
+            function parseFileContent(content) {
+                const recipients = [];
+                const lines = content.split('\n').filter(line => line.trim());
+                
+                if (lines.length === 0) {
+                    throw new Error('El archivo está vacío');
+                }
+
+                const firstLine = lines[0];
+                const hasPipes = firstLine.includes('|');
+                const hasCommas = firstLine.includes(',');
+
+                lines.forEach((line, index) => {
+                    if (hasPipes) {
+                        const parts = line.split('|').filter(part => part.trim());
+                        if (parts.length >= 2 && index > 0) {
+                            recipients.push({
+                                name: parts[0].trim(),
+                                email: parts[1].trim(),
+                                fullName: parts[2] ? parts[2].trim() : ''
+                            });
+                        }
+                    } else if (hasCommas) {
+                        const parts = line.split(',');
+                        if (parts.length >= 2 && index > 0) {
+                            recipients.push({
+                                name: parts[0].trim(),
+                                email: parts[1].trim(),
+                                fullName: parts[2] ? parts[2].trim() : ''
+                            });
+                        }
+                    } else {
+                        if (index > 0 && line.trim()) {
+                            const emailMatch = line.match(/\S+@\S+\.\S+/);
+                            if (emailMatch) {
+                                const email = emailMatch[0];
+                                const name = line.replace(email, '').trim();
+                                recipients.push({
+                                    name: name || 'Usuario',
+                                    email: email,
+                                    fullName: ''
+                                });
+                            }
+                        }
+                    }
+                });
+                
+                return recipients;
+            }
+
+            // ✅ FUNCIÓN CORREGIDA - Envío REAL de correos CON IMAGEN
+            async function sendEmails(recipients) {
+                sendingStatus.style.display = 'block';
+                sendingStatus.innerHTML = '';
+                
+                let successCount = 0;
+                let errorCount = 0;
+                
+                // Obtener la configuración del correo
+                const subject = subjectInput.value;
+                const message = messageInput.value;
+                const sender = senderInput.value;
+                
+                for (let i = 0; i < recipients.length; i++) {
+                    const recipient = recipients[i];
+                    
+                    const statusItem = document.createElement('div');
+                    statusItem.className = 'sending-item';
+                    statusItem.innerHTML = `
+                        <span class="sending-status-icon sending-pending"><i class="fas fa-clock"></i></span>
+                        Enviando REAL a: ${recipient.name} (${recipient.email})
+                    `;
+                    sendingStatus.appendChild(statusItem);
+                    sendingStatus.scrollTop = sendingStatus.scrollHeight;
+                    
+                    try {
+                        // ✅ ENVÍO REAL - Personalizar el mensaje
+                        const personalizedSubject = subject.replace(/\[NOMBRE\]/g, recipient.name);
+                        const personalizedMessage = message.replace(/\[NOMBRE\]/g, recipient.name);
+                        
+                        // ✅ PREPARAR DATOS PARA ENVÍO - INCLUYENDO IMAGEN CORRECTAMENTE
+                        const emailData = {
+                            recipients: [{
+                                email: recipient.email,
+                                name: recipient.name
+                            }],
+                            subject: personalizedSubject,
+                            message: personalizedMessage,
+                            sender: sender
+                        };
+
+                        // ✅ AÑADIR IMAGEN SI EXISTE - ENVIAR DATOS COMPLETOS
+                        if (currentImageData) {
+                            emailData.imageData = {
+                                data: currentImageData.base64Data,
+                                mimeType: currentImageData.mimeType,
+                                filename: currentImageData.filename
+                            };
+                            console.log('✅ Incluyendo imagen en el envío');
+                        }
+                        
+                        // ✅ ENVIAR AL BACKEND
+                        const response = await fetch('/send-bulk-emails', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(emailData)
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                statusItem.innerHTML = `
+                                    <span class="sending-status-icon sending-success"><i class="fas fa-check-circle"></i></span>
+                                    ✅ ENVIADO REAL: ${recipient.name} (${recipient.email}) ${currentImageData ? '📷' : ''}
+                                `;
+                                successCount++;
+                                console.log(`✅ Correo REAL enviado a ${recipient.email}`);
+                            } else {
+                                statusItem.innerHTML = `
+                                    <span class="sending-status-icon sending-error"><i class="fas fa-exclamation-circle"></i></span>
+                                    ❌ Error REAL: ${recipient.name} - ${result.message || 'Error del servidor'}
+                                `;
+                                errorCount++;
+                                console.log(`❌ Error REAL con ${recipient.email}:`, result.message);
+                            }
+                        } else {
+                            const errorText = await response.text();
+                            throw new Error(`HTTP ${response.status}: ${errorText}`);
+                        }
+                        
+                    } catch (error) {
+                        statusItem.innerHTML = `
+                            <span class="sending-status-icon sending-error"><i class="fas fa-exclamation-circle"></i></span>
+                            ❌ Error de conexión: ${recipient.name} - ${error.message}
+                        `;
+                        errorCount++;
+                        console.log(`❌ Error con ${recipient.email}:`, error.message);
+                    }
+                    
+                    // Actualizar progreso
+                    const progress = ((i + 1) / recipients.length) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    statusInfo.textContent = `Enviando... ${i + 1}/${recipients.length} (${successCount} éxitos, ${errorCount} errores)`;
+                    
+                    // Pequeña pausa entre envíos (2 segundos como en tu backend)
+                    if (i < recipients.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+                
+                return { successCount, errorCount };
+            }
+
+            // --- MANEJADORES DE EVENTOS ---
             
-            // Configurar plantilla seleccionada
+            // Selector de Plantillas
             templateButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
                     templateButtons.forEach(b => b.classList.remove('active'));
@@ -448,98 +1038,133 @@ Si tienes alguna pregunta o necesitas ayuda, no dudes en contactarnos.
                     updatePreview();
                 });
             });
-            
-            // Botón de actualizar vista previa
-            previewBtn.addEventListener('click', updatePreview);
-            
-            // Botón de enviar prueba
-            testBtn.addEventListener('click', function() {
-                statusInfo.textContent = "Enviando correo de prueba...";
-                progressBar.style.width = "30%";
-                
-                setTimeout(() => {
-                    progressBar.style.width = "100%";
-                    statusInfo.textContent = "Correo de prueba enviado a tu@email.com";
-                    
-                    notificationText.textContent = "Correo de prueba enviado con éxito";
-                    notification.classList.add('show');
-                    
-                    setTimeout(() => {
-                        notification.classList.remove('show');
-                    }, 3000);
-                    
-                    setTimeout(() => {
-                        progressBar.style.width = "0%";
-                        statusInfo.textContent = "Listo para enviar";
-                    }, 3000);
-                }, 1000);
-            });
-            
-            // Botón de enviar a todos
-            sendBtn.addEventListener('click', async function() {
-                const emails = recipientsInput.value.split(/[\n,]+/).map(email => email.trim()).filter(email => email);
 
-                if (emails.length === 0) {
-                    statusInfo.textContent = "Error: No hay direcciones de correo";
+            // ✅ EVENT LISTENERS PARA IMAGEN CORREGIDOS
+            btnSelectImage.addEventListener('click', function() {
+                imageUploadInput.click();
+            });
+
+            imageUploadInput.addEventListener('change', async function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                if (!file.type.startsWith('image/')) {
+                    showNotification('Error: El archivo debe ser una imagen', false);
                     return;
                 }
 
-                statusInfo.textContent = `Enviando a ${emails.length} destinatarios...`;
-                progressBar.style.width = "10%";
-                sendBtn.disabled = true;
+                if (file.size > 10 * 1024 * 1024) {
+                    showNotification('Error: La imagen no debe superar los 10MB', false);
+                    return;
+                }
 
+                showImagePreview(file);
+                
                 try {
-                    const response = await fetch('/send-emails', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            subject: subjectInput.value,
-                            sender: senderInput.value,
-                            message: messageInput.value,
-                            recipients: emails
-                        }),
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        let progress = 10;
-                        const interval = setInterval(() => {
-                            progress += 90 / emails.length;
-                            if (progress >= 100) {
-                                progress = 100;
-                                clearInterval(interval);
-                            }
-                            progressBar.style.width = `${progress}%`;
-                        }, 200);
-
-                        statusInfo.textContent = `Enviado a ${emails.length} destinatarios.`;
-                        notificationText.textContent = data.message;
-                        notification.classList.add('show');
-                    } else {
-                        statusInfo.textContent = `Error: ${data.message}`;
-                        notificationText.textContent = `Error: ${data.message}`;
-                        notification.classList.add('show');
-                    }
+                    currentImageData = await processImage(file);
+                    updatePreview();
+                    showNotification('Imagen cargada correctamente - Se incluirá en los correos', true);
                 } catch (error) {
-                    console.error('Error:', error);
-                    statusInfo.textContent = 'Error de conexión con el servidor.';
-                    notificationText.textContent = 'Error de conexión.';
-                    notification.classList.add('show');
-                } finally {
-                    setTimeout(() => {
-                        progressBar.style.width = "0%";
-                        statusInfo.textContent = "Listo para enviar";
-                        notification.classList.remove('show');
-                        sendBtn.disabled = false;
-                    }, 3000);
+                    console.error('Error procesando imagen:', error);
+                    removeImage();
+                    showNotification('Error al procesar la imagen', false);
                 }
             });
-            
-            // Inicializar vista previa
-            updatePreview();
+
+            btnRemoveImage.addEventListener('click', removeImage);
+
+            // Carga de Archivo CSV/TXT
+            fileUploadInput.addEventListener('change', async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const validTypes = ['text/plain', 'text/csv', 'application/vnd.ms-excel'];
+                if (!validTypes.includes(file.type) && !file.name.match(/\.(txt|csv)$/i)) {
+                    showNotification('Error: El archivo debe ser TXT o CSV', false);
+                    fileUploadInput.value = '';
+                    return;
+                }
+
+                fileProcessing.style.display = 'block';
+                
+                try {
+                    const text = await file.text();
+                    const recipients = parseFileContent(text);
+                    
+                    if (recipients.length === 0) {
+                        throw new Error('No se encontraron destinatarios en el formato esperado. Use CSV (Nombre,Correo) o TXT con pipes (| Nombre | Correo |)');
+                    }
+                    
+                    updateRecipientsDisplay(recipients);
+                    showNotification(`Se cargaron ${recipients.length} destinatarios correctamente`, true);
+                    
+                } catch (error) {
+                    console.error('Error procesando archivo:', error);
+                    showNotification('Error: ' + error.message, false);
+                } finally {
+                    fileProcessing.style.display = 'none';
+                    fileUploadInput.value = '';
+                }
+            });
+
+            // Eventos de Actualización de Vista Previa
+            subjectInput.addEventListener('input', updatePreview);
+            senderInput.addEventListener('input', updatePreview);
+            messageInput.addEventListener('input', updatePreview);
+            previewNameSelect.addEventListener('change', updatePreview);
+
+            // ✅ Envío masivo CORREGIDO - Envío REAL
+            sendBtn.addEventListener('click', async function() {
+                const recipientsToSend = Array.from(recipientsList.querySelectorAll('input[type="checkbox"]:checked')).map(checkbox => ({
+                    name: checkbox.dataset.name,
+                    email: checkbox.dataset.email
+                }));
+                
+                if (recipientsToSend.length === 0) {
+                    showNotification("Error: No hay destinatarios seleccionados.", false);
+                    return;
+                }
+                
+                // Confirmación antes del envío REAL
+                const imageInfo = currentImageData ? `\n📷 Se incluirá la imagen: ${currentImageData.filename}` : '';
+                const confirmSend = confirm(`¿Estás seguro de que quieres enviar ${recipientsToSend.length} correos REALES?${imageInfo}\n\nLos correos se enviarán realmente desde Universidad NEUUNI.`);
+                if (!confirmSend) return;
+                
+                const totalToSend = recipientsToSend.length;
+                statusInfo.textContent = `🚀 Iniciando envío REAL a ${totalToSend} destinatarios...`;
+                progressBar.style.width = "10%";
+                sendBtn.disabled = true;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviando Correos REALES...';
+
+                try {
+                    const result = await sendEmails(recipientsToSend);
+                    
+                    // Mensaje final mejorado
+                    if (result.successCount > 0) {
+                        const imageStatus = currentImageData ? ' con imagen adjunta' : '';
+                        statusInfo.textContent = `✅ ${result.successCount} correos REALES enviados exitosamente${imageStatus}`;
+                        showNotification(`🎉 ${result.successCount} correos REALES enviados${imageStatus} | ❌ ${result.errorCount} errores`, result.errorCount === 0);
+                    } else {
+                        statusInfo.textContent = `❌ Falló el envío de todos los correos`;
+                        showNotification(`😞 No se pudo enviar ningún correo. Verifica tu configuración SMTP.`, false);
+                    }
+                    
+                } catch (error) {
+                    statusInfo.textContent = `❌ Error crítico durante el envío`;
+                    showNotification(`💥 Error: ${error.message}`, false);
+                }
+                
+                // Restaurar interfaz
+                setTimeout(() => {
+                    progressBar.style.width = "0%";
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Correos REALES';
+                }, 5000);
+            });
+
+            // Inicialización
+            statusInfo.textContent = "Carga un archivo para comenzar - Listo para correos REALES";
+            sendBtn.disabled = true;
         });
     </script>
 </body>
